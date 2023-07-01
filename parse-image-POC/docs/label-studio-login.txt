@@ -1,0 +1,5 @@
+command to start local server: label-studio
+site: http://localhost:8080
+
+email:    dwaltrip77@gmail.com
+password: admin123
