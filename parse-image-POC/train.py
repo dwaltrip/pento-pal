@@ -69,9 +69,12 @@ if __name__ == '__main__':
         model = YOLO(f'weights/{BASE_MODEL__LARGE}')
         model.train(
             data='experiments/experiment-1.yaml',
-            device='mps',
             epochs=20,
+            # 'project', 'name' are required or the save_dir is in my old project.
+            project='runs',
+            name='train-test',
             # batch=8,
+            # device='mps',
         )
 
     test_images = [

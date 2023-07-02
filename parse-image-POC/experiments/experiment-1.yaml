@@ -1,0 +1,5 @@
+train: /Users/danielwaltrip/all-files/projects/ai-data/pento-exp-3/train
+val: /Users/danielwaltrip/all-files/projects/ai-data/pento-exp-3/val
+
+nc: 12
+names: ['F', 'I', 'L', 'N', 'P', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
