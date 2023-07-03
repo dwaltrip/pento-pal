@@ -1,13 +1,12 @@
 import math
 import os, os.path as path
 from pathlib import Path
-import random
 import shutil
 
 from PIL import Image
 
 
-def split_data_into_train_val_test(data_dir, percents):
+def split_obj_detect_data_for_training(data_dir, percents):
     assert sum(percents.values()) == 1, 'percents should sum to 100%'
 
     src_images_dir = path.join(data_dir, 'images')
@@ -17,9 +16,9 @@ def split_data_into_train_val_test(data_dir, percents):
     val_dir = path.join(data_dir, 'val')
     test_dir = path.join(data_dir, 'test')
 
-    for dir in [train_dir, val_dir, test_dir]:
-        os.makedirs(path.join(dir, 'images'), exist_ok=True)
-        os.makedirs(path.join(dir, 'labels'), exist_ok=True)
+    for folder in [train_dir, val_dir, test_dir]:
+        os.makedirs(path.join(folder, 'images'), exist_ok=True)
+        os.makedirs(path.join(folder, 'labels'), exist_ok=True)
 
     image_files = [
         file
