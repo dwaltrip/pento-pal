@@ -53,6 +53,12 @@ def split_img_classify_data_for_training(data_dir, percents):
         )
 
         for data_type, dest_dir in class_based_data_subdirs.items():
+            images_for_data_type = img_dict[data_type]
+
+            if len(images_for_data_type) == 0:
+                print(f'skipping: {class_name}, {data_type}')
+                continue
+
             os.mkdir(dest_dir)
 
             for image_file in img_dict[data_type]:
