@@ -7,8 +7,11 @@ import shutil
 from PIL import Image
 
 
-def split_obj_detect_data_for_training(data_dir, percents):
+def split_training_data(data_dir, percents):
     assert sum(percents.values()) == 1, 'percents should sum to 100%'
+
+    if not path.exists(data_dir):
+        raise FileNotFoundError(f'{data_dir} not found.')
 
     src_images_dir = path.join(data_dir, 'images')
     src_labels_dir = path.join(data_dir, 'labels')

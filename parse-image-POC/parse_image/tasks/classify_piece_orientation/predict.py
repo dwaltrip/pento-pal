@@ -23,19 +23,11 @@ def fmt_image_path(img):
     )
 
 
-if __name__ == '__main__':
-    if not os.path.isfile(previous_weights_path):
-        print('weight file:', previous_weights_path)
-        raise Exception('weights not found')
+def predict_classify_piece_orientation(model, data_dir):
 
-    model = YOLO(previous_weights_path)
 
-    test_img_root_dir = os.path.join(
-        DATA_DIR,
-        'pento-orientation-classify--TEST-images/CROPPED',
-    )
-
-    class_dirs = get_child_items(test_img_root_dir)
+    # class_dirs = get_child_items(test_img_root_dir)
+    class_dirs = get_child_items(data_dir)
     # class_dirs = [get_child_items(test_img_root_dir)[0]]
 
     test_image_paths = []

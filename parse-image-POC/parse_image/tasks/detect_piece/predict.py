@@ -1,12 +1,5 @@
 import os
-from ultralytics import YOLO
 from PIL import Image, ImageDraw
-
-BASE_MODEL__MEDIUM = 'yolov8m.pt'
-BASE_MODEL__LARGE = 'yolov8l.pt'
-
-# previous_weights_path = 'runs/detect/train8/weights/best.pt'
-previous_weights_path = 'zzzzzz'
 
 class_color_map = {
   "F": "#f196f1",
@@ -59,31 +52,6 @@ def predict_image(model, image_path):
 
     image.show()
 
-
-if __name__ == '__main__':
-
-    if os.path.isfile(previous_weights_path):
-        model = YOLO(previous_weights_path)
-    else:
-        # model = YOLO(f'weights/{BASE_MODEL__MEDIUM}')
-        model = YOLO(f'weights/{BASE_MODEL__LARGE}')
-        model.train(
-            data='experiments/experiment-1.yaml',
-            epochs=20,
-            # 'project', 'name' are required or the save_dir is in my old project.
-            project='runs',
-            name='train-test',
-            # batch=8,
-            # device='mps',
-        )
-
-    test_images = [
-        'example-images/pento-1.png',
-        'example-images/pento-2.png',
-        'example-images/pento-3.png',
-        'example-images/pento-4.png',
-        'example-images/pento-5.png',
-    ]
-
-    for image_path in test_images:
+def predict_piece_detection(model, image_paths):
+    for image_path in image_paths:
         predict_image(model, image_path)
