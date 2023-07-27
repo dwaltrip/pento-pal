@@ -15,13 +15,21 @@ def train_model(model):
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     # Train the model
+    print(f'Starting the training loop... Num epochs = {NUM_EPOCHS}')
     for epoch in range(NUM_EPOCHS):
         for i, (inputs, labels) in enumerate(dataloader):
             inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
 
             # Forward pass
             outputs = model(inputs)
-            loss = loss_fn(outputs, labels)
+
+            N, H, W, C = outputs.shape
+            # shape: [N*H*W, C]
+            outputs_reshape = outputs.permute(0, 2, 3, 1).reshape(N * H * W, C)
+            # shape: [N*H*W]
+            labels_reshape = labels.reshape(N * H * W)
+
+            loss = loss_fn(outputs_reshape, labels_reshape)
 
             # Backward pass and optimization
             optimizer.zero_grad()
@@ -38,6 +46,7 @@ def train_model(model):
 
     print('Finished Training')
     torch.save(model.state_dict(), TRAINED_MODEL_SAVE_PATH)
+    print('Model saved to:', TRAINED_MODEL_SAVE_PATH)
 
 if __name__ == '__main__':
     print('device:', DEVICE)

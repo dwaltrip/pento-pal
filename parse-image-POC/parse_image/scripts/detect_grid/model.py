@@ -35,7 +35,7 @@ class GridPredictor(nn.Module):
         x = torch.flatten(x, 1)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        return x.view(-1, 6, 10, self.num_classes)
+        return x.view(-1, 10, 6, self.num_classes)
 
 
 def load_pretrained_model(model_path):
@@ -57,6 +57,7 @@ def load_pretrained_model(model_path):
 def get_custom_model(num_classes=12, hidden_layer_size=256):
     backbone = load_pretrained_model(PRETRAINED_MODEL_SAVE_PATH)
     in_features = backbone.output_num_elems
+    print('GridPredictor -- in_features:', in_features)
     grid_predictor = GridPredictor(
         in_features,
         hidden_layer_size,

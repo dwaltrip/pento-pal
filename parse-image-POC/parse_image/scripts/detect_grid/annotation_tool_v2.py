@@ -67,6 +67,32 @@ def visualize_labels(label_path):
     cv2.waitKey(1)
 
 
+def normalize_label_file(label_path):
+    with open(label_path, 'r') as f: 
+        content = f.read().strip()
+
+    def keep_line(line):
+        line = line.strip()
+        # drop blank lines
+        if not line:
+            return False
+        # drop comments
+        return line[0] != '#' if line else False
+
+    def normalize_line(line):
+        # Separate every char by a single space
+        return ' '.join(line.strip().replace(' ', ''))
+
+    raw_lines = content.split('\n')
+    cleaned_lines = [normalize_line(line) for line in raw_lines]
+    cleaned_content  = '\n'.join(
+        line for line in cleaned_lines if keep_line(line)
+    )
+
+    with open(label_path, 'w') as file:
+        file.write(cleaned_content)
+
+
 def label_images(image_dir, label_dir):
     Path(label_dir).mkdir(parents=True, exist_ok=True)
 
@@ -74,11 +100,11 @@ def label_images(image_dir, label_dir):
         label_filename = os.path.splitext(filename)[0] + '.txt'
         label_path = os.path.join(label_dir, label_filename)
 
-        # if not os.path.exists(label_path):
-        #     with open(label_path, 'w') as f:
-        #         f.write('# Enter labels for image: ' + filename + '\n')
-        #         f.write('# Format: 10 lines with 6 class labels each\n')
-        #         f.write(f'# Classes: {', '.join(CLASS_NAMES)}\n')
+        if os.path.exists(label_path):
+            normalize_label_file(label_path)
+            if validate_labels(label_path):
+                print('Skipping... Valid existing labels found:', label_filename)
+                continue
 
         img_path = os.path.join(image_dir, filename)
 
@@ -90,6 +116,7 @@ def label_images(image_dir, label_dir):
 
         while True:
             subprocess.call(['vim', label_path])
+            normalize_label_file(label_path)
 
             if not validate_labels(label_path):
                 with open(label_path, 'r+') as f:
