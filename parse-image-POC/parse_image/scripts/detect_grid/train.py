@@ -1,60 +1,48 @@
 import torch
-from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from torch import nn, optim
 from torch.utils.data import DataLoader
-from torchvision.transforms import Compose, ToTensor
-from prep_custom_model import GridPredictor  # import the custom head class from the first script
 
-# Load your prepared data
-# TODO: Implement this!
+from model import get_custom_model
+from dataset import GridLabelDataset
+from config import *
 
-# Convert the data to PyTorch tensors and normalize to [0,1]
-transform = Compose([
-    ToTensor()
-])
+def train_model():
+    # Load your prepared data
+    dataset = GridLabelDataset(IMAGE_DIR, LABEL_DIR)
+    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
-# Set up your data loader
-# TODO: Implement this!
+    # Initialize the model
+    model = get_custom_model(NUM_CLASSES, HIDDEN_LAYER).to(DEVICE)
 
-# Initialize the model
-model = torchvision.models.detection.fasterrcnn_resnet50_fpn(pretrained=False)
+    loss_fn = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-# Get the number of input features for the classifier
-in_features = model.roi_heads.box_predictor.cls_score.in_features
+    # Train the model
+    for epoch in range(NUM_EPOCHS):
+        for i, (inputs, labels) in enumerate(dataloader):
+            inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
 
-# Define the custom head
-num_classes = 12
-model.roi_heads.box_predictor = GridPredictor(in_features, hidden_layer=256, num_classes=num_classes)
+            # Forward pass
+            outputs = model(inputs)
+            loss = loss_fn(outputs, labels)
 
-# Load the modified pre-trained weights
-model.load_state_dict(torch.load('modified_model.pth'))
+            # Backward pass and optimization
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
-# Define the loss function
-criterion = nn.CrossEntropyLoss()
+            # Print loss every 10 batches
+            if (i+1) % 10 == 0:
+                print (
+                    f'Epoch [{epoch+1}/{NUM_EPOCHS}],',
+                    f'Step [{i+1}/{len(dataloader)}],',
+                    f'Loss: {loss.item():.4f}'
+                )
 
-# Set up the optimizer
-optimizer = optim.Adam(model.parameters(), lr=0.001)
+    print('Finished Training')
 
-# Train the model
-num_epochs = 10
-for epoch in range(num_epochs):
-    for i, (inputs, labels) in enumerate(dataloader):
-        inputs, labels = inputs.to(device), labels.to(device)
-        
-        # Forward pass
-        outputs = model(inputs)
-        loss = criterion(outputs, labels)
-        
-        # Backward pass and optimization
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        
-        # Print loss every 10 batches
-        if (i+1) % 10 == 0:
-            print (f"Epoch [{epoch+1}/{num_epochs}], Step [{i+1}/{len(dataloader)}], Loss: {loss.item():.4f}")
-        
-print('Finished Training')
+    # Save the trained model
+    torch.save(model.state_dict(), TRAINED_MODEL_SAVE_PATH)
 
-# Save the trained model
-torch.save(model.state_dict(), 'custom_trained_model.pth')
+if __name__ == '__main__':
+    train_model()

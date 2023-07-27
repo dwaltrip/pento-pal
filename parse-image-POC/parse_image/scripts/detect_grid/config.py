@@ -1,0 +1,10 @@
+IMAGE_DIR = '/path/to/your/images'
+LABEL_DIR = '/path/to/your/labels'
+MODEL_SAVE_PATH = 'modified_model.pth'
+TRAINED_MODEL_SAVE_PATH = 'custom_trained_model.pth'
+NUM_CLASSES = 12
+HIDDEN_LAYER = 256
+NUM_EPOCHS = 10
+BATCH_SIZE = 4
+LEARNING_RATE = 0.001
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
