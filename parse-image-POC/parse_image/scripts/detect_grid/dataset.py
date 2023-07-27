@@ -1,16 +1,17 @@
 import os
+from PIL import Image
 import torch
 from torch.utils.data import Dataset
-from PIL import Image
 from torchvision.transforms import ToTensor
+
 
 IMAGE_EXTS = ['.png']
 
 def is_image(filename):
-    return any([file.endswith(ext) for ext in exts])
+    return any([filename.endswith(ext) for ext in IMAGE_EXTS])
 
 class GridLabelDataset(Dataset):
-    def __init__(self, image_dir, label_dir, exts=IMAGE_EXTS):
+    def __init__(self, image_dir, label_dir):
         self.image_dir = image_dir
         self.label_dir = label_dir
         self.image_filenames = [
