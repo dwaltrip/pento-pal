@@ -9,7 +9,15 @@ RUN_NAME = 'pento-custom-model-EXPERIMENT-1'
 IMAGE_SIDE_LEN = 224
 IMAGE_SIZE = (3, IMAGE_SIDE_LEN, IMAGE_SIDE_LEN)
 
+NUM_EPOCHS = 30
+BATCH_SIZE = 4
+LEARNING_RATE = 0.001
+HIDDEN_LAYER = 256
+# DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+DEVICE = 'cpu'
+
 CLASS_NAMES = ['f', 'i', 'l', 'n', 'p', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+NUM_CLASSES = len(CLASS_NAMES)
 CLASS_MAPS = SimpleNamespace(
     name_to_label= { name: i for i, name in enumerate(CLASS_NAMES) },
     label_to_name= { i: name for i, name in enumerate(CLASS_NAMES) },
@@ -36,11 +44,3 @@ LABEL_DIR = os.path.join(DATA_PATH, 'labels')
 WEIGHTS_DIR = os.path.join(PROJECT_ROOT, 'weights')
 PRETRAINED_MODEL_SAVE_PATH = os.path.join(WEIGHTS_DIR, 'resnet50_modified.pth')
 TRAINED_MODEL_SAVE_PATH = os.path.join(WEIGHTS_DIR, 'finetuned_grid_detector.pth')
-
-NUM_CLASSES = len(CLASS_NAMES)
-HIDDEN_LAYER = 256
-NUM_EPOCHS = 10
-BATCH_SIZE = 4
-LEARNING_RATE = 0.001
-# DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-DEVICE = 'cpu'

@@ -14,7 +14,7 @@ from parse_image.scripts.detect_grid.config import (
     CLASS_NAMES,
     CLASS_MAPS,
 )
-from parse_image.scripts.detect_grid.dataset import is_image
+from parse_image.scripts.detect_grid.utils import is_image
 
 
 LABEL_VIZ = SimpleNamespace(
@@ -84,9 +84,13 @@ def combine_images(img1, img2, padding=20, bg_color='#000'):
     return np.hstack((img1, horiz_padding_img, img2))
 
 
-def validate_labels(label_path):
-    with open(label_path, 'r') as f:
-        lines = f.read().splitlines()
+def validate_labels(label_path_or_content):
+    if os.path.exists(label_path_or_content):
+        with open(label_path_or_content, 'r') as f:
+            lines = f.read().splitlines()
+    else:
+        lines = label_path_or_content.splitlines()
+
     labels = [line for line in lines if line and line[0] != '#']
     flat_labels = ''.join(labels)
     return all(flat_labels.count(c) == 5 for c in CLASS_NAMES)
@@ -125,10 +129,7 @@ def visualize_labels(label_path):
     return cv2.resize(viz_img, scaled_size)
 
 
-def normalize_label_file(label_path):
-    with open(label_path, 'r') as f: 
-        content = f.read().strip()
-
+def normalize_label_file_content(content):
     def keep_line(line):
         line = line.strip()
         # drop blank lines
@@ -141,14 +142,19 @@ def normalize_label_file(label_path):
         # Separate every char by a single space
         return ' '.join(line.strip().replace(' ', ''))
 
-    raw_lines = content.split('\n')
+    raw_lines = content.strip().split('\n')
     cleaned_lines = [normalize_line(line) for line in raw_lines]
-    cleaned_content  = '\n'.join(
+    cleaned_content = '\n'.join(
         line for line in cleaned_lines if keep_line(line)
     )
+    return cleaned_content
 
+
+def normalize_label_file(label_path):
+    with open(label_path, 'r') as f: 
+        content = f.read()
     with open(label_path, 'w') as file:
-        file.write(cleaned_content)
+        file.write(normalize_label_file_content(content))
 
 
 def label_images(image_dir, label_dir):

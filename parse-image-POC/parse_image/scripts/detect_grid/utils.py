@@ -1,6 +1,12 @@
 import torch
 
 
+IMAGE_EXTS = ['.png']
+
+def is_image(filename):
+    return any([filename.endswith(ext) for ext in IMAGE_EXTS])
+
+
 def get_output_shape(model, image_size):
     """
     Determine the shape of the feature map and output channels produced by a model.

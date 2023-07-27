@@ -15,8 +15,16 @@ def train_model(model):
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     # Train the model
-    print(f'Starting the training loop... Num epochs = {NUM_EPOCHS}')
+    print('')
+    print(f'Starting the training loop...')
+    print('\n\t'.join([
+        f'Epochs = {NUM_EPOCHS}',
+        f'Number of training examples: {len(dataset)}',
+    ]))
+
     for epoch in range(NUM_EPOCHS):
+        print(f'Epoch [{epoch+1}/{NUM_EPOCHS}]')
+
         for i, (inputs, labels) in enumerate(dataloader):
             inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
 
@@ -36,13 +44,7 @@ def train_model(model):
             loss.backward()
             optimizer.step()
 
-            # Print loss every 10 batches
-            if (i+1) % 10 == 0:
-                print (
-                    f'Epoch [{epoch+1}/{NUM_EPOCHS}],',
-                    f'Step [{i+1}/{len(dataloader)}],',
-                    f'Loss: {loss.item():.4f}'
-                )
+        print('\t', f'train Loss: {loss.item():.4f}')
 
     print('Finished Training')
     torch.save(model.state_dict(), TRAINED_MODEL_SAVE_PATH)
