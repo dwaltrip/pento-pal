@@ -6,13 +6,10 @@ from parse_image.scripts.detect_grid.model import get_custom_model
 from parse_image.scripts.detect_grid.dataset import GridLabelDataset
 from parse_image.scripts.detect_grid.config import *
 
-def train_model():
-    # Load your prepared data
+
+def train_model(model):
     dataset = GridLabelDataset(IMAGE_DIR, LABEL_DIR)
     dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
-
-    # Initialize the model
-    model = get_custom_model(NUM_CLASSES, HIDDEN_LAYER).to(DEVICE)
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
@@ -40,9 +37,10 @@ def train_model():
                 )
 
     print('Finished Training')
-
-    # Save the trained model
     torch.save(model.state_dict(), TRAINED_MODEL_SAVE_PATH)
 
 if __name__ == '__main__':
-    train_model()
+    print('device:', DEVICE)
+    model = get_custom_model(NUM_CLASSES, HIDDEN_LAYER).to(DEVICE)
+
+    train_model(model)

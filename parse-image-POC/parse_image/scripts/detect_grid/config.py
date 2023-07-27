@@ -31,7 +31,7 @@ IMAGE_DIR = os.path.join(DATA_PATH, 'images')
 LABEL_DIR = os.path.join(DATA_PATH, 'labels')
 
 WEIGHTS_DIR = os.path.join(PROJECT_ROOT, 'weights')
-MODEL_SAVE_PATH = os.path.join(WEIGHTS_DIR, 'resnet50_modified.pth')
+PRETRAINED_MODEL_SAVE_PATH = os.path.join(WEIGHTS_DIR, 'resnet50_modified.pth')
 TRAINED_MODEL_SAVE_PATH = os.path.join('finetuned_grid_detector.pth')
 
 NUM_CLASSES = len(CLASS_NAMES)

@@ -4,6 +4,8 @@ import torch
 from torch.utils.data import Dataset
 from torchvision.transforms import ToTensor
 
+from parse_image.scripts.detect_grid.config import CLASS_NAMES, CLASS_MAPS
+
 
 IMAGE_EXTS = ['.png']
 
@@ -28,10 +30,11 @@ class GridLabelDataset(Dataset):
         label_filename = os.path.splitext(image_filename)[0] + '.txt'
 
         with open(os.path.join(self.label_dir, label_filename), 'r') as f:
+            content = f.read().strip().split('\n')
+            lines = [line.strip() for line in content if line.strip()]
             labels = torch.tensor([
-                [int(cell) for cell in line.split()]
-                for line in f.read().split('\n')
-                if line
+                [CLASS_MAPS.name_to_label[name] for name in line.split(' ')]
+                for line in lines 
             ])
 
         return self.transform(img), labels

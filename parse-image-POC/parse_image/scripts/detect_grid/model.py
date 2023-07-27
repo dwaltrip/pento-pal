@@ -1,8 +1,14 @@
+import os
+
 import torch
 from torch import nn
 import torch.nn.functional as F
-# from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
-from torchvision.models.detection import fasterrcnn_resnet50_fpn
+from torchvision.models.detection import (
+    fasterrcnn_resnet50_fpn,
+    FasterRCNN_ResNet50_FPN_Weights,
+)
+
+from parse_image.scripts.detect_grid.config import PRETRAINED_MODEL_SAVE_PATH
 
 
 class GridPredictor(nn.Module):
@@ -19,8 +25,17 @@ class GridPredictor(nn.Module):
         return x.view(-1, 6, 10, self.num_classes)
 
 
+def load_pretrained_model(model_path):
+    if os.path.exists(model_path):
+        model = torch.load(model_path)
+    else:
+        model = fasterrcnn_resnet50_fpn(weights=FasterRCNN_ResNet50_FPN_Weights.DEFAULT)
+        torch.save(model, model_path)
+    return model
+
+
 def get_custom_model(num_classes=12, hidden_layer_size=256):
-    model = fasterrcnn_resnet50_fpn(pretrained=True)
+    model = load_pretrained_model(PRETRAINED_MODEL_SAVE_PATH)
 
     in_features = model.roi_heads.box_predictor.cls_score.in_features
     model.roi_heads.box_predictor = GridPredictor(
