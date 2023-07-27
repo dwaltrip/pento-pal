@@ -1,10 +1,12 @@
 import os
 import subprocess
+from types import SimpleNamespace
 
 import cv2
 import numpy as np
-from PIL import ImageColor
+from PIL import Image, ImageColor
 from pathlib import Path
+import torchvision.transforms
 
 from parse_image.scripts.detect_grid.config import (
     IMAGE_DIR,
@@ -15,6 +17,27 @@ from parse_image.scripts.detect_grid.config import (
 from parse_image.scripts.detect_grid.dataset import is_image
 
 
+LABEL_VIZ = SimpleNamespace(
+    rows=10,
+    cols=6,
+    square_size=60, # pixels
+    padding=5, # pixels
+    padding_color='#808080',
+    scale_factor=0.7, # account for the bg of the training images
+)
+def get_img_size(rows, cols, square_size, padding):
+    return SimpleNamespace(
+        height=(square_size+padding)*rows + padding,
+        width=(square_size+padding)*cols + padding,
+    )
+VIZ_IMG_SIZE = get_img_size(
+    rows=LABEL_VIZ.rows,
+    cols=LABEL_VIZ.cols,
+    square_size=LABEL_VIZ.square_size,
+    padding=LABEL_VIZ.padding,
+)
+
+
 def get_class_color(name):
     return CLASS_MAPS.name_to_color[name]
 
@@ -22,6 +45,43 @@ def hex_to_cv2_color(hex_color):
     r, g, b = ImageColor.getrgb(hex_color)
     bgr = (b, g, r)
     return bgr
+
+def pad_img(img, target_size, fill=(0,0,0)):
+    h, w = img.shape[:2]
+    pad_height = max(target_size[0] - h, 0)
+    pad_width = max(target_size[1] - w, 0)
+
+    pad_top = pad_height // 2
+    pad_bot = pad_height - pad_top
+
+    pad_left = pad_width // 2
+    pad_right = pad_width - pad_left
+
+    padding = (pad_left, pad_top, pad_right, pad_bot)
+    pad_fn = torchvision.transforms.Pad(padding, fill=fill)
+    return np.array(pad_fn(Image.fromarray(img)))
+
+def combine_images(img1, img2, padding=20, bg_color='#000'):
+    height1, height2 = img1.shape[0], img2.shape[0]
+
+    # Calculate the padding for top and bottom to center the image
+    diff = abs(height1 - height2)
+    pad_top = diff // 2
+    pad_bot = diff - pad_top
+
+    # Create padding between the images
+    color = hex_to_cv2_color(bg_color)
+    horiz_padding_dim = (max(height1, height2), padding, 3)
+    horiz_padding_img = np.full(horiz_padding_dim, color, dtype=np.uint8)
+
+    # Pad the smaller image so it matches size of larger image
+    if height1 < height2:
+        img1 = pad_img(img1, img2.shape[:2], fill=color)
+    else:
+        img2 = pad_img(img2, img1.shape[:2], fill=color)
+
+    # Concatenate the images horizontally
+    return np.hstack((img1, horiz_padding_img, img2))
 
 
 def validate_labels(label_path):
@@ -33,25 +93,23 @@ def validate_labels(label_path):
 
 
 def visualize_labels(label_path):
-    num_rows = 10
-    num_cols = 6
-    size = 50 # pixels
-    padding = 4 # pixels
-    padding_color = '#808080'
-
     with open(label_path, 'r') as f:
         lines = [line.strip() for line in f.read().strip().splitlines()]
+
     labels = [line.split(' ') for line in lines if line and line[0] != '#']
 
-    img_size = (
-        (size + padding) * num_rows + padding,
-        (size + padding) * num_cols + padding,
-        3,
+    img_size = (VIZ_IMG_SIZE.height, VIZ_IMG_SIZE.width, 3)
+    viz_img = np.full(
+        img_size,
+        hex_to_cv2_color(LABEL_VIZ.padding_color),
+        dtype=np.uint8,
     )
-    vis_img = np.full(img_size, hex_to_cv2_color(padding_color), dtype=np.uint8)
 
-    for i in range(num_rows):
-        for j in range(num_cols):
+    size = LABEL_VIZ.square_size
+    padding = LABEL_VIZ.padding
+
+    for i in range(LABEL_VIZ.rows):
+        for j in range(LABEL_VIZ.cols):
             top_left = dict(
                 y = i * (size + padding) + padding,
                 x = j * (size + padding) + padding,
@@ -60,11 +118,11 @@ def visualize_labels(label_path):
             x = (top_left['x'], top_left['x'] + size)
             
             hex_color = get_class_color(labels[i][j])
-            vis_img[y[0]:y[1], x[0]:x[1]] = hex_to_cv2_color(hex_color)
+            viz_img[y[0]:y[1], x[0]:x[1]] = hex_to_cv2_color(hex_color)
 
-    cv2.namedWindow('label-verification', cv2.WINDOW_NORMAL)
-    cv2.imshow('label-verification', vis_img)
-    cv2.waitKey(1)
+    s = LABEL_VIZ.scale_factor
+    scaled_size = (int(VIZ_IMG_SIZE.width * s), int(VIZ_IMG_SIZE.height * s))
+    return cv2.resize(viz_img, scaled_size)
 
 
 def normalize_label_file(label_path):
@@ -108,8 +166,10 @@ def label_images(image_dir, label_dir):
 
         img_path = os.path.join(image_dir, filename)
 
-        # Load an image, create a window, and display image
+        # Load and resize the image, then display it
         img = cv2.imread(img_path)
+        img = cv2.resize(img, (VIZ_IMG_SIZE.width, VIZ_IMG_SIZE.height))
+
         cv2.namedWindow('training-img', cv2.WINDOW_NORMAL)
         cv2.imshow('training-img', img)
         cv2.waitKey(1)
@@ -131,7 +191,14 @@ def label_images(image_dir, label_dir):
                     f.write(error_msg + '\n' + content)
                 continue
 
-            visualize_labels(label_path)
+            label_viz_img = visualize_labels(label_path)
+            cv2.destroyAllWindows()
+            combined_img = combine_images(img, label_viz_img, bg_color='#ba8')
+
+            cv2.namedWindow('original-plus-label-viz', cv2.WINDOW_NORMAL)
+            cv2.imshow('original-plus-label-viz', combined_img)
+            cv2.waitKey(1)
+
             user_input = input(' '.join([
                 'If visual verification is correct, press ENTER.',
                 'If not, press any other key to edit labels: ',
