@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from pathlib import Path
 
-from config import IMAGE_DIR, LABEL_DIR
+from parse_image.scripts.detect_grid.config import IMAGE_DIR, LABEL_DIR
 
 def label_images(image_dir, label_dir):
     Path(label_dir).mkdir(parents=True, exist_ok=True)

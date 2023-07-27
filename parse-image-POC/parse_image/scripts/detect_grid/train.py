@@ -2,9 +2,9 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
-from model import get_custom_model
-from dataset import GridLabelDataset
-from config import *
+from parse_image.scripts.detect_grid.model import get_custom_model
+from parse_image.scripts.detect_grid.dataset import GridLabelDataset
+from parse_image.scripts.detect_grid.config import *
 
 def train_model():
     # Load your prepared data
