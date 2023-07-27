@@ -4,6 +4,11 @@ from types import SimpleNamespace
 from settings import AI_DATA_DIR, PROJECT_ROOT
 
 
+RUN_NAME = 'pento-custom-model-EXPERIMENT-1'
+
+IMAGE_SIDE_LEN = 224
+IMAGE_SIZE = (3, IMAGE_SIDE_LEN, IMAGE_SIDE_LEN)
+
 CLASS_NAMES = ['f', 'i', 'l', 'n', 'p', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 CLASS_MAPS = SimpleNamespace(
     name_to_label= { name: i for i, name in enumerate(CLASS_NAMES) },
@@ -23,8 +28,6 @@ CLASS_MAPS = SimpleNamespace(
         'z' : '#9fdd92',
     },
 )
-
-RUN_NAME = 'pento-custom-model-EXPERIMENT-1'
 
 DATA_PATH = os.path.join(AI_DATA_DIR, RUN_NAME)
 IMAGE_DIR = os.path.join(DATA_PATH, 'images')
