@@ -103,7 +103,7 @@ def make_textured_color_block(size, base_color):
     block_shape = (size, size)
     texture = generate_perlin_noise(block_shape, scale=0.02)
     texture_bgr = cv2.cvtColor(texture, cv2.COLOR_GRAY2BGR)
-    plain_block = np.full(block_shape, base_color, dtype=texture.dtype)
+    plain_block = np.full((*block_shape, 3), base_color, dtype=texture.dtype)
 
     # blend the Perlin noise texture with the base color
     alpha = 0.95
