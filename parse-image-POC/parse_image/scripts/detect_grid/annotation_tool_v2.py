@@ -14,7 +14,10 @@ from parse_image.scripts.detect_grid.config import (
     CLASS_NAMES,
     CLASS_MAPS,
 )
-from parse_image.scripts.detect_grid.utils import is_image
+from parse_image.scripts.detect_grid.utils import (
+    generate_perlin_noise,
+    is_image,
+)
 
 
 LABEL_VIZ = SimpleNamespace(
@@ -96,6 +99,17 @@ def validate_labels(label_path_or_content):
     return all(flat_labels.count(c) == 5 for c in CLASS_NAMES)
 
 
+def make_textured_color_block(size, base_color): 
+    block_shape = (size, size)
+    texture = generate_perlin_noise(block_shape, scale=0.02)
+    texture_bgr = cv2.cvtColor(texture, cv2.COLOR_GRAY2BGR)
+    plain_block = np.full(block_shape, base_color, dtype=texture.dtype)
+
+    # blend the Perlin noise texture with the base color
+    alpha = 0.95
+    return cv2.addWeighted(plain_block, alpha, texture_bgr, 1 - alpha, 0)
+
+
 def visualize_labels(label_path):
     with open(label_path, 'r') as f:
         lines = [line.strip() for line in f.read().strip().splitlines()]
@@ -120,9 +134,13 @@ def visualize_labels(label_path):
             )
             y = (top_left['y'], top_left['y'] + size)
             x = (top_left['x'], top_left['x'] + size)
-            
+
             hex_color = get_class_color(labels[i][j])
-            viz_img[y[0]:y[1], x[0]:x[1]] = hex_to_cv2_color(hex_color)
+            color_block = make_textured_color_block(
+                size=size,
+                base_color=hex_to_cv2_color(hex_color),
+            )
+            viz_img[y[0]:y[1], x[0]:x[1]] = color_block
 
     s = LABEL_VIZ.scale_factor
     scaled_size = (int(VIZ_IMG_SIZE.width * s), int(VIZ_IMG_SIZE.height * s))
