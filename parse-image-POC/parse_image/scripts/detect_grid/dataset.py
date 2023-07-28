@@ -2,7 +2,7 @@ import os
 from PIL import Image
 import torch
 from torch.utils.data import Dataset
-from torchvision.transforms import ToTensor
+from torchvision import transforms
 
 from parse_image.scripts.detect_grid.config import (
     CLASS_NAMES,
@@ -17,6 +17,9 @@ from parse_image.scripts.detect_grid.annotation_tool_v2 import (
 from parse_image.scripts.detect_grid.utils import is_image
 
 
+IMAGE_NET_MEAN = [0.485, 0.456, 0.406]
+IMAGE_NET_STD = [0.229, 0.224, 0.225]
+
 class GridLabelDataset(Dataset):
     def __init__(self, image_dir, label_dir):
         self.image_dir = image_dir
@@ -27,7 +30,10 @@ class GridLabelDataset(Dataset):
         self.label_filenames = [
             file for file in os.listdir(label_dir) if file.endswith('.txt')
         ]
-        self.transform = ToTensor()
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean=IMAGE_NET_MEAN, std=IMAGE_NET_STD),
+        ])
 
     def __len__(self):
         return min(len(self.image_filenames), len(self.label_filenames))

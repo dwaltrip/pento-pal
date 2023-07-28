@@ -22,8 +22,14 @@ def train_model(model):
         f'Number of training examples: {len(dataset)}',
     ]))
 
+    training_loss_per_epoch = []
+    # validation_loss_per_epoch = []
+
     for epoch in range(NUM_EPOCHS):
         print(f'Epoch [{epoch+1}/{NUM_EPOCHS}]')
+
+        epoch_training_loss = 0.0
+        # epoch_validation_loss = 0.0
 
         for i, (inputs, labels) in enumerate(dataloader):
             inputs, labels = inputs.to(DEVICE), labels.to(DEVICE)
@@ -38,13 +44,14 @@ def train_model(model):
             labels_reshape = labels.reshape(N * H * W)
 
             loss = loss_fn(outputs_reshape, labels_reshape)
+            epoch_training_loss += loss.item()
 
             # Backward pass and optimization
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
 
-        print('\t', f'train Loss: {loss.item():.4f}')
+        print('\t', f'train Loss: {epoch_training_loss / len(dataloader):.4f}')
 
     print('Finished Training')
     torch.save(model.state_dict(), TRAINED_MODEL_SAVE_PATH)
