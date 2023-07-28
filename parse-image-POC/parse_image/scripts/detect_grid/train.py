@@ -52,6 +52,6 @@ def train_model(model):
 
 if __name__ == '__main__':
     print('device:', DEVICE)
-    model = get_custom_model(NUM_CLASSES, HIDDEN_LAYER).to(DEVICE)
+    model = get_custom_model().to(DEVICE)
 
     train_model(model)

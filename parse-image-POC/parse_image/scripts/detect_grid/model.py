@@ -6,10 +6,12 @@ import torch.nn.functional as F
 from torchvision.models import resnet50, ResNet50_Weights
 
 from parse_image.scripts.detect_grid.config import (
+    NUM_CLASSES,
+    HIDDEN_LAYER_SIZE,
     IMAGE_SIZE,
     PRETRAINED_MODEL_SAVE_PATH,
 )
-from parse_image.scripts.detect_grid.utils import get_output_shape
+from parse_image.scripts.detect_grid.utils import get_output_shape, count_params
 
 
 class GridDetection(nn.Module):
@@ -23,18 +25,30 @@ class GridDetection(nn.Module):
         return self.grid_predictor(x)
 
 
+# TODO: fix the hard-coding of `6*10*num_classes`
 class GridPredictor(nn.Module):
     def __init__(self, in_features, hidden_layer_size, num_classes):
         super().__init__()
         self.num_classes = num_classes
-        self.fc1 = nn.Linear(in_features, hidden_layer_size)
-        self.fc2 = nn.Linear(hidden_layer_size, 6*10*num_classes)
 
+        # self.fc1 = nn.Linear(in_features, hidden_layer_size)
+        # self.fc2 = nn.Linear(hidden_layer_size, 6*10*num_classes)
+
+        self.linear_relu_stack = nn.Sequential(
+            nn.Linear(in_features, 512),
+            nn.ReLU(),
+            nn.Linear(512, 256),
+            nn.ReLU(),
+            nn.Linear(256, 256),
+            nn.ReLU(),
+            nn.Linear(256, 6*10*num_classes),
+        )
+
+    # def forward(self, x):
+    #     x = F.adaptive_avg_pool2d(x, (6, 10))  # Resize to grid size
     def forward(self, x):
-        # x = F.adaptive_avg_pool2d(x, (6, 10))  # Resize to grid size
         x = torch.flatten(x, 1)
-        x = F.relu(self.fc1(x))
-        x = self.fc2(x)
+        x = self.linear_relu_stack(x)
         return x.view(-1, 10, 6, self.num_classes)
 
 
@@ -54,14 +68,14 @@ def load_pretrained_model(model_path):
     return backbone
 
 
-def get_custom_model(num_classes=12, hidden_layer_size=256):
+def get_custom_model():
     backbone = load_pretrained_model(PRETRAINED_MODEL_SAVE_PATH)
     in_features = backbone.output_num_elems
-    print('GridPredictor -- in_features:', in_features)
+
     grid_predictor = GridPredictor(
         in_features,
-        hidden_layer_size,
-        num_classes,
+        HIDDEN_LAYER_SIZE,
+        NUM_CLASSES,
     )
-    model = GridDetection(backbone, grid_predictor)
-    return model
+    print('count_params(grid_predictor):', count_params(grid_predictor))
+    return GridDetection(backbone, grid_predictor)

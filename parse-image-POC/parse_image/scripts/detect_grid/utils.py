@@ -30,3 +30,7 @@ def generate_perlin_noise(size, scale=0.1):
         noise, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U
     )
     return noise_texture
+
+
+def count_params(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
