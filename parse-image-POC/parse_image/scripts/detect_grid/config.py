@@ -14,6 +14,7 @@ NUM_EPOCHS = 30
 BATCH_SIZE = 16
 # LEARNING_RATE = 0.001
 LEARNING_RATE = 0.002
+# LEARNING_RATE = 0.01
 HIDDEN_LAYER_SIZE = 256
 # DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 DEVICE = 'cpu'

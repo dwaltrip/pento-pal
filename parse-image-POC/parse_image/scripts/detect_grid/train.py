@@ -13,6 +13,7 @@ def train_model(model):
 
     loss_fn = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE)
 
     # Train the model
     print('')
@@ -53,7 +54,9 @@ def train_model(model):
 
         print('\t', f'train Loss: {epoch_training_loss / len(dataloader):.4f}')
 
-    print('Finished Training')
+    print('Finished training.')
+    # TODO: If the file exists, modify the name to not overwrite the old file
+    #       Maybe timestamp it or something? Or give it a name?
     torch.save(model.state_dict(), TRAINED_MODEL_SAVE_PATH)
     print('Model saved to:', TRAINED_MODEL_SAVE_PATH)
 
