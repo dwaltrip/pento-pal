@@ -4,7 +4,8 @@ from types import SimpleNamespace
 from settings import AI_DATA_DIR, PROJECT_ROOT
 
 
-RUN_NAME = 'pento-custom-model-EXPERIMENT-1'
+# RUN_NAME = 'pento-custom-model-EXPERIMENT-1'
+RUN_NAME = 'pento-detect-grid-2023-08-01'
 
 IMAGE_SIDE_LEN = 224
 IMAGE_SIZE = (3, IMAGE_SIDE_LEN, IMAGE_SIDE_LEN)

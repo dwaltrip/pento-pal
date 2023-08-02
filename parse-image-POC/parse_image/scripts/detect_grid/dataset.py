@@ -63,4 +63,6 @@ class GridLabelDataset(Dataset):
             ])
 
         resized_img = resize_and_pad(img, target_size=IMAGE_SIDE_LEN)
-        return self.transform(resized_img), labels
+        # remove alpha channel, if there is one
+        prepped_img = self.transform(resized_img)[:3]
+        return prepped_img, labels
