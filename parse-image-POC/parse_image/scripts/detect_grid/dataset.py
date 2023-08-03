@@ -42,29 +42,32 @@ class GridLabelDataset(Dataset):
             transforms.Normalize(mean=IMAGE_NET_MEAN, std=IMAGE_NET_STD),
         ])
 
-        files = zip_longest(self.image_filenames, self.label_filenames)
-        self.prepped_data = self._prep_data(files)
-
-    
+        self.filepaths = self._prep_filepaths(self.image_filenames, self.label_filenames)
+        self.prepped_data = self._prep_data(self.filepaths)
+ 
     def __getitem__(self, idx):
-        return self.prepped_images[idx], self.prepped_labels[idx]
+        return self.prepped_data[idx]
 
     def __len__(self):
-        return min(len(self.prepped_images), len(self.prepped_labels))
-    
-    def _prep_data(self, files):
-        def prep_from_files(image_filename, label_filename):
-            assert image_filename or label_filename
-            if not image_filename:
-                image_filename = os.path.splitext(label_filename)[0] + '.png'
-            elif not label_filename:
-                label_filename = os.path.splitext(image_filename)[0] + '.txt'
-            return (
-                self._prep_image(os.path.join(self.image_dir, image_filename)),
-                self._prep_label(os.path.join(self.label_dir, label_filename)),
+        return len(self.prepped_data)
+     
+    def _prep_data(self, filepaths):
+        # def prep_from_files(image_filename, label_filename):
+        #     assert image_filename or label_filename
+        #     if not image_filename:
+        #         image_filename = os.path.splitext(label_filename)[0] + '.png'
+        #     elif not label_filename:
+        #         label_filename = os.path.splitext(image_filename)[0] + '.txt'
+        #     return (
+        #         self._prep_image(os.path.join(self.image_dir, image_filename)),
+        #         self._prep_label(os.path.join(self.label_dir, label_filename)),
+        #     )
+        prepped_data = [(
+                self._prep_image(img_path),
+                self._prep_label(label_path),
             )
-
-        prepped_data = [prep_from_files(*item) for item in files]
+            for img_path, label_path in filepaths
+        ]
 
         if self.augment:
             return [
@@ -76,12 +79,12 @@ class GridLabelDataset(Dataset):
             return prepped_data
 
     def _prep_image(self, image_path):
-        raw_img = Image.open(image_path)
+        img = Image.open(image_path)
         img = resize_and_pad(img, target_size=IMAGE_SIDE_LEN)
+        img =  self.transform(img)
         # remove alpha channel, if there is one
         img = img[:3]
         return img
-        # return self.transform(img)
     
     def _prep_label(self, label_path):
         with open(label_path, 'r') as f:
@@ -96,3 +99,23 @@ class GridLabelDataset(Dataset):
             [CLASS_MAPS.name_to_label[name] for name in line.split(' ')]
             for line in lines if line 
         ])
+
+    def _prep_filepaths(self, image_filenames, label_filenames):
+        image_filename_set = set(image_filenames)
+        skipped_labels = []
+        prepped_filepaths = []
+
+        for label_filename in label_filenames:
+            image_filename = os.path.splitext(label_filename)[0] + '.png'
+
+            if image_filename not in image_filename_set:
+                skipped_labels.append(label_filename)
+                continue
+
+            prepped_filepaths.append((
+                os.path.join(self.image_dir, image_filename),
+                os.path.join(self.label_dir, label_filename)
+            ))
+
+        print(f'Images not found for {len(skipped_labels)} labels')
+        return prepped_filepaths 
