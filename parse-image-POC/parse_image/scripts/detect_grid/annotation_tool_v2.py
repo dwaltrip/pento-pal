@@ -179,6 +179,9 @@ def label_images(image_dir, label_dir):
     Path(label_dir).mkdir(parents=True, exist_ok=True)
 
     for i, filename in enumerate(os.listdir(image_dir)):
+        if not is_image(filename):
+            continue
+
         label_filename = os.path.splitext(filename)[0] + '.txt'
         label_path = os.path.join(label_dir, label_filename)
 

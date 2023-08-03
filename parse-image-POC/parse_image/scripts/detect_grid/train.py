@@ -17,17 +17,17 @@ def train_model(model, device):
     DEBUG = False
 
     batch_size = BATCH_SIZE
-    # epochs = NUM_EPOCHS
-    epochs = 100
-    # lr = LEARNING_RATE
-    lr = 0.005
+    epochs = NUM_EPOCHS
+    # epochs = 200
+    lr = LEARNING_RATE
+    # lr = 0.005
 
-    augment = False
-    # augment = True
+    # augment = False
+    augment = True
 
-    # subset = None
-    subset = 2
-    batch_size = subset
+    subset = None
+    # subset = 2
+    # batch_size = subset
 
     full_dataset = GridLabelDataset(IMAGE_DIR, LABEL_DIR, augment=augment)
     if subset:
@@ -61,7 +61,10 @@ def train_model(model, device):
         '\t' + f'Number of frozen layers:',
         len(list(name for name, p in model.named_parameters() if not p.requires_grad))
     )
-    print('\t' + f'Dataset size = {len(dataset)}')
+    print('\t' + f'Dataset size =', len(dataset))
+    print('\t' + f'Train data size =', len(train_dataloader.dataset))
+    print('\t' + f'Val data size =', len(getattr(val_dataloader, 'dataset', [])))
+    print('\t' + f'-------------------')
     print('\t' + f'Augment = {augment}')
     print('\t' + f'Epochs = {epochs}')
     print('\t' + f'lr = {lr}')

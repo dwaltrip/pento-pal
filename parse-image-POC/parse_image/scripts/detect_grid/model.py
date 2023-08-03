@@ -34,14 +34,16 @@ class GridPredictor(nn.Module):
         # self.fc1 = nn.Linear(in_features, hidden_layer_size)
         # self.fc2 = nn.Linear(hidden_layer_size, 6*10*num_classes)
 
+        out_features = 6*10*num_classes
+
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(in_features, 512),
+            nn.Linear(in_features, 256),
             nn.ReLU(),
-            nn.Linear(512, 256),
-            nn.ReLU(),
-            nn.Linear(256, 256),
-            nn.ReLU(),
-            nn.Linear(256, 6*10*num_classes),
+            # nn.Linear(512, 256),
+            # nn.ReLU(),
+            # nn.Linear(256, 256),
+            # nn.ReLU(),
+            nn.Linear(256, out_features)
         )
 
     # def forward(self, x):

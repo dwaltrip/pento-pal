@@ -24,7 +24,7 @@ def rotate_tensor_image(t_img, angle):
 
 rand_angle = lambda x: torch.randint(-x, x, (1,)).item()
 # ROTATION_AMOUNTS = [0, rand_angle(), rand_angle()]
-ROTATION_AMOUNTS = [0, 20, -20]
+ROTATION_AMOUNTS = [0, 15, -15]
 
 def get_augmentations(base_img, base_label):
     def rotate(t_img, label, amount):
@@ -45,8 +45,8 @@ def get_augmentations(base_img, base_label):
         for rot_amt in ROTATION_AMOUNTS
     ]
 
-    data_augmentations = all_possible_flips
-    # data_augmentations = flips_plus_rotations
+    # data_augmentations = all_possible_flips
+    data_augmentations = flips_plus_rotations
 
     # drop the description (only for debugging)
     return [item[:2] for item in data_augmentations]
@@ -62,7 +62,7 @@ def get_flips(t_img, label):
         # Vertical flip
         (torch.flip(t_img, dims=[1]), torch.flip(label, dims=[0]), 'Vert'),
         # Horizontal + Vertical flip
-        (torch.flip(t_img, dims=[1,2]), torch.flip(label, dims=[0,1]), 'Horiz + Vert'),
+        # (torch.flip(t_img, dims=[1,2]), torch.flip(label, dims=[0,1]), 'Horiz + Vert'),
     ]
 
 
