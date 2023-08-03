@@ -59,6 +59,7 @@ def load_pretrained_model(model_path):
         backbone = resnet50(weights=ResNet50_Weights.DEFAULT)
         # Remove the last layer, a fully connected layer.
         backbone = nn.Sequential(*list(backbone.children())[:-1])
+        # backbone = nn.Sequential(*list(backbone.children())[:-2])
 
         output_size = get_output_shape(backbone, IMAGE_SIZE)
         num_elems = output_size.numel()

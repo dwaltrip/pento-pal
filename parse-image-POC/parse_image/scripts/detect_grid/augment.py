@@ -45,9 +45,12 @@ def get_augmentations(base_img, base_label):
         for rot_amt in ROTATION_AMOUNTS
     ]
 
+    data_augmentations = all_possible_flips
+    # data_augmentations = flips_plus_rotations
+
     # drop the description (only for debugging)
-    return [item[:2] for item in flips_plus_rotations]
-    # return flips_plus_rotations
+    return [item[:2] for item in data_augmentations]
+    # return data_augmentations
 
 
 def get_flips(t_img, label):

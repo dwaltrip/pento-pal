@@ -14,15 +14,19 @@ IS_MPS_AVAILABLE = torch.backends.mps.is_available()
 TRAIN_PERCENT = 0.8
 
 def train_model(model, device):
+    DEBUG = False
+
     batch_size = BATCH_SIZE
-    epochs = NUM_EPOCHS
-    lr = LEARNING_RATE
+    # epochs = NUM_EPOCHS
+    epochs = 100
+    # lr = LEARNING_RATE
+    lr = 0.005
 
     augment = False
     # augment = True
 
     # subset = None
-    subset = 3
+    subset = 2
     batch_size = subset
 
     full_dataset = GridLabelDataset(IMAGE_DIR, LABEL_DIR, augment=augment)
@@ -35,8 +39,11 @@ def train_model(model, device):
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
-    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    # train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    # val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    val_dataloader = []
+
     skip_validation = len(val_dataloader) == 0
 
     loss_fn = nn.CrossEntropyLoss()
@@ -77,10 +84,6 @@ def train_model(model, device):
             # Forward pass
             outputs = model(inputs)
 
-            print('outputs.shape:', outputs.shape)
-            print('labels.shape:', labels.shape)
-            assert False
-
             # N, H, W, C = outputs.shape
             # # shape: [N*H*W, C]
             # outputs_reshape = outputs.reshape(N * H * W, C)
@@ -90,7 +93,12 @@ def train_model(model, device):
 
             # CrossEntropyLoss expects shape: [N, C, H, W]
             outputs_permuted = outputs.permute(0, 3, 1, 2)
-            loss = loss_fn(outputs_permuted, labels_reshape)
+            if DEBUG:
+                print('outputs.shape:', outputs.shape)
+                print('outputs_permuted.shape:', outputs_permuted.shape)
+                print('labels.shape:', labels.shape)
+
+            loss = loss_fn(outputs_permuted, labels)
             epoch_training_loss += loss.item()
 
             # Backward pass and optimization
@@ -114,6 +122,11 @@ def train_model(model, device):
         print('\t' + f'train Loss: {epoch_training_loss / len(train_dataloader):.4f}')
         if(not skip_validation):
             print('\t' + f'val Loss: {epoch_validation_loss / len(val_dataloader):.4f}')
+        
+        EXIT_EARLY_THRESHOLD = 0.01
+        if epoch_training_loss < EXIT_EARLY_THRESHOLD:
+            print(f'Training loss is below {EXIT_EARLY_THRESHOLD}. Stopping early.')
+            break
 
     print('Finished training.')
     print('Total training time:', time.time() - training_t0, 'seconds')
