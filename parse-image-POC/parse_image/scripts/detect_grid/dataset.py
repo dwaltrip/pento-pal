@@ -1,4 +1,6 @@
+from itertools import zip_longest
 import os
+
 from PIL import Image
 import torch
 from torch.utils.data import Dataset
@@ -15,13 +17,17 @@ from parse_image.scripts.detect_grid.annotation_tool_v2 import (
     validate_labels,
 )
 from parse_image.scripts.detect_grid.utils import is_image
+from parse_image.scripts.detect_grid.augment import get_augmentations
 
 
 IMAGE_NET_MEAN = [0.485, 0.456, 0.406]
 IMAGE_NET_STD = [0.229, 0.224, 0.225]
 
 class GridLabelDataset(Dataset):
-    def __init__(self, image_dir, label_dir):
+
+    def __init__(self, image_dir, label_dir, augment=False):
+        self.augment = augment
+
         self.image_dir = image_dir
         self.label_dir = label_dir
         self.image_filenames = [
@@ -30,39 +36,63 @@ class GridLabelDataset(Dataset):
         self.label_filenames = [
             file for file in os.listdir(label_dir) if file.endswith('.txt')
         ]
+
         self.transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize(mean=IMAGE_NET_MEAN, std=IMAGE_NET_STD),
         ])
 
-    def __len__(self):
-        return min(len(self.image_filenames), len(self.label_filenames))
+        files = zip_longest(self.image_filenames, self.label_filenames)
+        self.prepped_data = self._prep_data(files)
 
+    
     def __getitem__(self, idx):
-        num_images = len(self.image_filenames)
-        num_labels = len(self.label_filenames)
+        return self.prepped_images[idx], self.prepped_labels[idx]
 
-        if num_labels < num_images:
-            label_filename = self.label_filenames[idx]
-            image_filename = os.path.splitext(label_filename)[0] + '.png'
+    def __len__(self):
+        return min(len(self.prepped_images), len(self.prepped_labels))
+    
+    def _prep_data(self, files):
+        def prep_from_files(image_filename, label_filename):
+            assert image_filename or label_filename
+            if not image_filename:
+                image_filename = os.path.splitext(label_filename)[0] + '.png'
+            elif not label_filename:
+                label_filename = os.path.splitext(image_filename)[0] + '.txt'
+            return (
+                self._prep_image(os.path.join(self.image_dir, image_filename)),
+                self._prep_label(os.path.join(self.label_dir, label_filename)),
+            )
+
+        prepped_data = [prep_from_files(*item) for item in files]
+
+        if self.augment:
+            return [
+                augmented_item 
+                for item in prepped_data
+                for augmented_item in get_augmentations(*item)
+            ]
         else:
-            image_filename = self.image_filenames[idx]
-            label_filename = os.path.splitext(image_filename)[0] + '.txt'
+            return prepped_data
 
-        img = Image.open(os.path.join(self.image_dir, image_filename))
-
-        with open(os.path.join(self.label_dir, label_filename), 'r') as f:
-            cleaned_labels = normalize_label_file_content(f.read())
-            if not validate_labels(cleaned_labels):
-                raise ValueError('Invalid label file:', label_filename)
-
-            lines = cleaned_labels.split('\n')
-            labels = torch.tensor([
-                [CLASS_MAPS.name_to_label[name] for name in line.split(' ')]
-                for line in lines if line 
-            ])
-
-        resized_img = resize_and_pad(img, target_size=IMAGE_SIDE_LEN)
+    def _prep_image(self, image_path):
+        raw_img = Image.open(image_path)
+        img = resize_and_pad(img, target_size=IMAGE_SIDE_LEN)
         # remove alpha channel, if there is one
-        prepped_img = self.transform(resized_img)[:3]
-        return prepped_img, labels
+        img = img[:3]
+        return img
+        # return self.transform(img)
+    
+    def _prep_label(self, label_path):
+        with open(label_path, 'r') as f:
+            content = f.read()
+        cleaned_labels = normalize_label_file_content(content)
+
+        if not validate_labels(cleaned_labels):
+            raise ValueError('Invalid label file:', label_path)
+
+        lines = cleaned_labels.split('\n')
+        return torch.tensor([
+            [CLASS_MAPS.name_to_label[name] for name in line.split(' ')]
+            for line in lines if line 
+        ])
