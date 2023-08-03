@@ -7,14 +7,14 @@ from torchvision import transforms
 
 from settings import PROJECT_ROOT
 
-from parse_image.scripts.detect_grid.config import (
-    CLASS_NAMES,
+from settings import AI_DATA_DIR, CLASS_NAMES
+from parse_image.utils.resize_and_pad import resize_and_pad
+from parse_image.detect_grid.hard_method.config import (
     IMAGE_SIDE_LEN,
     TRAINED_MODEL_SAVE_PATH,
     IMAGE_DIR,
 )
-from parse_image.scripts.detect_grid.model import get_custom_model
-from parse_image.scripts.detect_grid.prep_images import resize_and_pad
+from parse_image.detect_grid.hard_method.model import get_custom_model
 
 
 def prep_image(img_path):

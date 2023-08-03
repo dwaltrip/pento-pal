@@ -4,9 +4,9 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader, Subset, random_split
 
-from parse_image.scripts.detect_grid.model import get_custom_model
-from parse_image.scripts.detect_grid.dataset import GridLabelDataset
-from parse_image.scripts.detect_grid.config import *
+from parse_image.detect_grid.common.dataset import GridLabelDataset
+from parse_image.detect_grid.hard_method.model import get_custom_model
+from parse_image.detect_grid.hard_method.config import *
 
 
 IS_MPS_AVAILABLE = torch.backends.mps.is_available()

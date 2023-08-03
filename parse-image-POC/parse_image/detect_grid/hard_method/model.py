@@ -5,13 +5,13 @@ from torch import nn
 import torch.nn.functional as F
 from torchvision.models import resnet50, ResNet50_Weights
 
-from parse_image.scripts.detect_grid.config import (
-    NUM_CLASSES,
+from settings import NUM_CLASSES
+from parse_image.utils.misc import get_output_shape, count_params
+from parse_image.detect_grid.hard_method.config import (
     HIDDEN_LAYER_SIZE,
     IMAGE_SIZE,
     PRETRAINED_MODEL_SAVE_PATH,
 )
-from parse_image.scripts.detect_grid.utils import get_output_shape, count_params
 
 
 class GridDetection(nn.Module):

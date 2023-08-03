@@ -6,18 +6,18 @@ import torch
 from torch.utils.data import Dataset
 from torchvision import transforms
 
-from parse_image.scripts.detect_grid.config import (
-    CLASS_NAMES,
-    CLASS_MAPS,
+from settings import CLASS_NAMES, CLASS_MAPS
+
+from parse_image.utils.misc import is_image
+from parse_image.utils.resize_and_pad import resize_and_pad
+from parse_image.detect_grid.common.augment import get_augmentations
+from parse_image.detect_grid.hard_method.config import (
     IMAGE_SIDE_LEN,
 )
-from parse_image.scripts.detect_grid.prep_images import resize_and_pad
-from parse_image.scripts.detect_grid.annotation_tool_v2 import (
+from parse_image.detect_grid.common.annotation_tool_v2 import (
     normalize_label_file_content,
     validate_labels,
 )
-from parse_image.scripts.detect_grid.utils import is_image
-from parse_image.scripts.detect_grid.augment import get_augmentations
 
 
 IMAGE_NET_MEAN = [0.485, 0.456, 0.406]

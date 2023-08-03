@@ -8,21 +8,16 @@ from PIL import Image, ImageColor
 from pathlib import Path
 import torchvision.transforms
 
-from parse_image.scripts.detect_grid.config import (
-    IMAGE_DIR,
-    LABEL_DIR,
-    CLASS_NAMES,
-    CLASS_MAPS,
-)
-from parse_image.scripts.detect_grid.utils import (
+from settings import CLASS_NAMES, CLASS_MAPS, GRID
+from parse_image.utils.misc import (
     generate_perlin_noise,
     is_image,
 )
 
 
 LABEL_VIZ = SimpleNamespace(
-    rows=10,
-    cols=6,
+    rows=GRID.height,
+    cols=GRID.width,
     square_size=60, # pixels
     padding=5, # pixels
     padding_color='#808080',
@@ -240,4 +235,10 @@ def label_images(image_dir, label_dir):
 
 
 if __name__ == '__main__':
-    label_images(IMAGE_DIR, LABEL_DIR)
+    if len(sys.argv) != 3:
+        print('Usage: python annotation_tool_v2.py <image_dir> <label_dir>')
+        sys.exit(1)
+
+    image_dir = sys.argv[1]
+    label_dir = sys.argv[2]
+    label_images(image_dir, label_dir)
