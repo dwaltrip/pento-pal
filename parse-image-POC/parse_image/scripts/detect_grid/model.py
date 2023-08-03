@@ -35,9 +35,9 @@ class GridPredictor(nn.Module):
         # self.fc2 = nn.Linear(hidden_layer_size, 6*10*num_classes)
 
         self.linear_relu_stack = nn.Sequential(
-            nn.Linear(in_features, 256),
+            nn.Linear(in_features, 512),
             nn.ReLU(),
-            nn.Linear(256, 256),
+            nn.Linear(512, 256),
             nn.ReLU(),
             nn.Linear(256, 256),
             nn.ReLU(),
@@ -64,6 +64,7 @@ def load_pretrained_model(model_path):
         num_elems = output_size.numel()
         backbone.output_num_elems = num_elems
 
+        print('Saving backbone to:', model_path)
         torch.save(backbone, model_path)
     return backbone
 

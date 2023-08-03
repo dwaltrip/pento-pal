@@ -39,11 +39,18 @@ class GridLabelDataset(Dataset):
 
         self.transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGE_NET_MEAN, std=IMAGE_NET_STD),
+            # transforms.Normalize(mean=IMAGE_NET_MEAN, std=IMAGE_NET_STD),
         ])
 
         self.filepaths = self._prep_filepaths(self.image_filenames, self.label_filenames)
         self.prepped_data = self._prep_data(self.filepaths)
+
+        print('GridLabelDataset', '(augmented)' if augment else '')
+        print(
+            f'\t{len(self.label_filenames)} labels',
+            f'({len(self.filepaths)} with matching images)',
+        )
+        print(f'\t{len(self.prepped_data)} total training examples')
  
     def __getitem__(self, idx):
         return self.prepped_data[idx]

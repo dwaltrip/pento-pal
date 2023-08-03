@@ -1,3 +1,5 @@
+import time
+
 import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader, Subset, random_split
@@ -12,20 +14,34 @@ IS_MPS_AVAILABLE = torch.backends.mps.is_available()
 TRAIN_PERCENT = 0.8
 
 def train_model(model, device):
-    full_dataset = GridLabelDataset(IMAGE_DIR, LABEL_DIR)
-    # dataset = Subset(full_dataset, range(20))
-    dataset = full_dataset
+    batch_size = BATCH_SIZE
+    epochs = NUM_EPOCHS
+    lr = LEARNING_RATE
+
+    augment = False
+    # augment = True
+
+    # subset = None
+    subset = 3
+    batch_size = subset
+
+    full_dataset = GridLabelDataset(IMAGE_DIR, LABEL_DIR, augment=augment)
+    if subset:
+        dataset = Subset(full_dataset, range(subset))
+    else:
+        dataset = full_dataset
 
     train_size = int(TRAIN_PERCENT * len(dataset))
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
-    train_dataloader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    val_dataloader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True)
+    train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    skip_validation = len(val_dataloader) == 0
 
     loss_fn = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    # optimizer = torch.optim.SGD(model.parameters(), lr=LEARNING_RATE)
+    optimizer = optim.Adam(model.parameters(), lr=lr)
+    # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
     print('------------------------------------------')
     print('Grid Predictor (head):')
@@ -33,18 +49,24 @@ def train_model(model, device):
     print('------------------------------------------')
 
     # Train the model
-    print('')
+    print(f'Run info / hyperparams:')
+    print(
+        '\t' + f'Number of frozen layers:',
+        len(list(name for name, p in model.named_parameters() if not p.requires_grad))
+    )
+    print('\t' + f'Dataset size = {len(dataset)}')
+    print('\t' + f'Augment = {augment}')
+    print('\t' + f'Epochs = {epochs}')
+    print('\t' + f'lr = {lr}')
+    print('\t' + f'batch_size = {batch_size}')
+    print()
+
+    training_t0 = time.time()
+
     print(f'Starting the training loop...')
-    print('\n\t'.join([
-        f'Epochs = {NUM_EPOCHS}',
-        f'Number of training examples: {len(dataset)}',
-    ]))
-
-    training_loss_per_epoch = []
-    # validation_loss_per_epoch = []
-
-    for epoch in range(NUM_EPOCHS):
-        print(f'Epoch [{epoch+1}/{NUM_EPOCHS}]')
+    for epoch in range(epochs):
+        t0 = time.time()
+        print(f'Epoch [{epoch+1}/{epochs}]')
 
         epoch_training_loss = 0.0
         epoch_validation_loss = 0.0
@@ -55,13 +77,20 @@ def train_model(model, device):
             # Forward pass
             outputs = model(inputs)
 
-            N, H, W, C = outputs.shape
-            # shape: [N*H*W, C]
-            outputs_reshape = outputs.reshape(N * H * W, C)
-            # shape: [N*H*W]
-            labels_reshape = labels.reshape(N * H * W)
+            print('outputs.shape:', outputs.shape)
+            print('labels.shape:', labels.shape)
+            assert False
 
-            loss = loss_fn(outputs_reshape, labels_reshape)
+            # N, H, W, C = outputs.shape
+            # # shape: [N*H*W, C]
+            # outputs_reshape = outputs.reshape(N * H * W, C)
+            # # shape: [N*H*W]
+            # labels_reshape = labels.reshape(N * H * W)
+            # loss = loss_fn(outputs_reshape, labels_reshape)
+
+            # CrossEntropyLoss expects shape: [N, C, H, W]
+            outputs_permuted = outputs.permute(0, 3, 1, 2)
+            loss = loss_fn(outputs_permuted, labels_reshape)
             epoch_training_loss += loss.item()
 
             # Backward pass and optimization
@@ -80,18 +109,23 @@ def train_model(model, device):
                 loss = loss_fn(outputs_reshape, labels_reshape)
                 epoch_validation_loss += loss.item()
 
-        print('\t', f'train Loss: {epoch_training_loss / len(train_dataloader):.4f}')
-        print('\t', f'val Loss: {epoch_validation_loss / len(val_dataloader):.4f}')
+        t1 = time.time()
+        print('\t' + f'time: {t1-t0:.2f} seconds')
+        print('\t' + f'train Loss: {epoch_training_loss / len(train_dataloader):.4f}')
+        if(not skip_validation):
+            print('\t' + f'val Loss: {epoch_validation_loss / len(val_dataloader):.4f}')
 
     print('Finished training.')
+    print('Total training time:', time.time() - training_t0, 'seconds')
+
     # TODO: If the file exists, modify the name to not overwrite the old file
     #       Maybe timestamp it or something? Or give it a name?
     torch.save(model.state_dict(), TRAINED_MODEL_SAVE_PATH)
     print('Model saved to:', TRAINED_MODEL_SAVE_PATH)
 
 if __name__ == '__main__':
-    device = 'cpu'
-    # device = torch.device('mps') if IS_MPS_AVAILABLE else 'cpu'
+    # device = 'cpu'
+    device = torch.device('mps') if IS_MPS_AVAILABLE else 'cpu'
     print('device:', device)
 
     model = get_custom_model().to(device)
