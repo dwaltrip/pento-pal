@@ -42,6 +42,10 @@ class GridLabelDataset(Dataset):
             # transforms.Normalize(mean=IMAGE_NET_MEAN, std=IMAGE_NET_STD),
         ])
 
+        # Track which image files are used, for debugging
+        self._idx_to_image_filename = {}
+        self._image_files_used = set()
+
         self.filepaths = self._prep_filepaths(self.image_filenames, self.label_filenames)
         self.prepped_data = self._prep_data(self.filepaths)
 
@@ -53,6 +57,7 @@ class GridLabelDataset(Dataset):
         print(f'\t{len(self.prepped_data)} total training examples')
  
     def __getitem__(self, idx):
+        self._image_files_used.add(self._idx_to_image_filename[idx])
         return self.prepped_data[idx]
 
     def __len__(self):
@@ -75,6 +80,8 @@ class GridLabelDataset(Dataset):
             )
             for img_path, label_path in filepaths
         ]
+        for i, (img_path, label_path) in enumerate(filepaths):
+            self._idx_to_image_filename[i] = (img_path, label_path)
 
         if self.augment:
             return [

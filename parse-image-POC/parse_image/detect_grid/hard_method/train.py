@@ -2,7 +2,7 @@ import time
 
 import torch
 from torch import nn, optim
-from torch.utils.data import DataLoader, Subset, random_split
+from torch.utils.data import DataLoader, Subset, random_split, SubsetRandomSampler
 
 from parse_image.detect_grid.common.dataset import GridLabelDataset
 from parse_image.detect_grid.hard_method.model import get_custom_model
@@ -22,16 +22,17 @@ def train_model(model, device):
     lr = LEARNING_RATE
     # lr = 0.005
 
-    # augment = False
-    augment = True
+    augment = False
+    # augment = True
 
-    subset = None
-    # subset = 2
-    # batch_size = subset
+    # subset = None
+    subset = 2
+    batch_size = subset
 
     full_dataset = GridLabelDataset(IMAGE_DIR, LABEL_DIR, augment=augment)
     if subset:
-        dataset = Subset(full_dataset, range(subset))
+        indices = list(x for x in SubsetRandomSampler(range(len(full_dataset))))[:subset]
+        dataset = Subset(full_dataset, indices)
     else:
         dataset = full_dataset
 
@@ -130,6 +131,13 @@ def train_model(model, device):
         if epoch_training_loss < EXIT_EARLY_THRESHOLD:
             print(f'Training loss is below {EXIT_EARLY_THRESHOLD}. Stopping early.')
             break
+    
+    # only print image filenames when doing small debugging runs
+    if len(full_dataset._image_files_used) < 10:
+        print('Images used:')
+        for f in full_dataset._image_files_used:
+            print('\t' + str(f))
+        print('------------')
 
     print('Finished training.')
     print('Total training time:', time.time() - training_t0, 'seconds')

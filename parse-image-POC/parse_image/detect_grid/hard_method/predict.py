@@ -87,6 +87,11 @@ if __name__ == '__main__':
         'ec882312-IMG_2447.png',
     ]
 
+    example_images = [
+        # os.path.join(AI_DATA_DIR, 'pento-detect-grid-2023-08-01/images/IMG_2926.png'),
+        os.path.join(AI_DATA_DIR, 'pento-detect-grid-2023-08-01/images/IMG_2991.png'),
+        os.path.join(AI_DATA_DIR, 'pento-detect-grid-2023-08-01/images/IMG_2772.png'),
+    ]
     images = [os.path.join(IMAGE_DIR, f) for f in example_images]
     # images = [os.path.join(IMAGE_DIR, f) for f in training_images]
     # images = [os.path.join(image_dir, 'pento-5.png')]
