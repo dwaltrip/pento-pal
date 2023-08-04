@@ -6,7 +6,7 @@ import torch
 from torch import nn, optim
 from torch.utils.data import DataLoader, Subset, random_split, SubsetRandomSampler
 
-from settings import AI_DATA_DIR
+from settings import AI_DATA_DIR, PROJECT_ROOT
 from parse_image.detect_grid.common.dataset import GridLabelDataset
 from parse_image.detect_grid.easy_method.model import get_custom_model
 
@@ -39,13 +39,19 @@ def build_hyperparams(**kwargs):
     )
 
 
-def train_model(model, device, data_dir, hyp):
+def train_model(model, device, data_dir, save_path, hyp):
     image_dir = os.path.join(data_dir, 'images')
     label_dir = os.path.join(data_dir, 'labels')
     full_dataset = GridLabelDataset(image_dir, label_dir, augment=hyp.augment)
 
-    add_grid_lines_and_show([image for i, (image, label) in enumerate(full_dataset) if i < 8])
-    assert False, 'stop here'
+    # add_grid_lines_and_show([image for i, (image, label) in enumerate(full_dataset) if i < 8])
+    # assert False, 'stop here'
+
+    subset = hyp.subset
+    epochs = hyp.epochs
+    batch_size = hyp.batch_size
+    lr = hyp.lr
+    augment = hyp.augment
 
     if subset:
         indices = list(x for x in SubsetRandomSampler(range(len(full_dataset))))[:subset]
@@ -69,8 +75,8 @@ def train_model(model, device, data_dir, hyp):
     # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
     print('------------------------------------------')
-    print('Grid Predictor (head):')
-    print(model.grid_predictor)
+    print(f'Model head ({model.head.__class__.__name__}):')
+    print(model.head)
     print('------------------------------------------')
 
     # Train the model
@@ -149,8 +155,8 @@ def train_model(model, device, data_dir, hyp):
 
     # TODO: If the file exists, modify the name to not overwrite the old file
     #       Maybe timestamp it or something? Or give it a name?
-    torch.save(model.state_dict(), TRAINED_MODEL_SAVE_PATH)
-    print('Model saved to:', TRAINED_MODEL_SAVE_PATH)
+    torch.save(model.state_dict(), save_path)
+    print('Model saved to:', save_path)
 
 if __name__ == '__main__':
     # device = 'cpu'
@@ -171,9 +177,11 @@ if __name__ == '__main__':
         augment=False,
         # debug=True,
     )
-    # model = get_custom_model().to(device)
+    backbone_weight_path = os.path.join(PROJECT_ROOT, 'weights', 'grid-easy-backbone.pth')
+    model = get_custom_model(backbone_weight_path).to(device)
 
     data_dir = os.path.join(AI_DATA_DIR, 'detect-grid-easy--2023-08-03')
+    save_path = os.path.join(PROJECT_ROOT, 'weights', 'grid-easy-model.pth')
+
     # train_model(model, data_dir=data_dir, device=device, hyp=hyp)
-    # train_model(model, data_dir=data_dir, device=device, hyp=hyp_try_to_overfit)
-    train_model(None, data_dir=data_dir, device=device, hyp=hyp_try_to_overfit)
+    train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp_try_to_overfit)

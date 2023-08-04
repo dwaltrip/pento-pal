@@ -89,6 +89,8 @@ torch==2.0.1
     #   -r requirements.in
     #   torchvision
     #   ultralytics
+torchinfo==1.8.0
+    # via -r requirements.in
 torchvision==0.15.2
     # via
     #   -r requirements.in
