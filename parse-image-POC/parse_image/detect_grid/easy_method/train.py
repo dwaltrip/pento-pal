@@ -163,12 +163,15 @@ def train_model(model, device, data_dir, save_path, hyp):
 
 if __name__ == '__main__':
     device = 'cpu'
+    # Getting an error with MPS on my machine :(
     # device = torch.device('mps') if IS_MPS_AVAILABLE else 'cpu'
     print('device:', device)
 
     hyp = build_hyperparams(
-        epochs=50,
-        batch_size=16,
+        # epochs=50,
+        epochs=30,
+        batch_size=32,
+        # lr=0.005,
         lr=0.003,
         # augment=True,
         subset=None,
@@ -181,7 +184,8 @@ if __name__ == '__main__':
         # debug=True,
     )
     backbone_weight_path = os.path.join(PROJECT_ROOT, 'weights', 'grid-easy-backbone.pth')
-    model = get_custom_model(backbone_weight_path).to(device)
+    model = get_custom_model(backbone_weight_path)
+    model.to(device)
 
     import torchinfo
     torchinfo.summary(model, input_size=(2, 3, 224, 224))

@@ -62,7 +62,8 @@ class GridLabelDataset(Dataset):
         # So we explicitly do this check first thing.
         if idx >= len(self.prepped_data):
             raise IndexError(f'Index {idx} out of range')
-        self._image_files_used.add(self._idx_to_image_filename[idx])
+        if not self.augment:
+            self._image_files_used.add(self._idx_to_image_filename[idx])
         return self.prepped_data[idx]
 
     def __len__(self):
@@ -92,7 +93,7 @@ class GridLabelDataset(Dataset):
             return [
                 augmented_item 
                 for item in prepped_data
-                for augmented_item in get_augmentations(*item)
+                for augmented_item in get_augmentations(*item, include_rotations=False)
             ]
         else:
             return prepped_data

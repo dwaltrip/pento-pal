@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 from types import SimpleNamespace
 
 import cv2
@@ -21,7 +22,7 @@ LABEL_VIZ = SimpleNamespace(
     square_size=60, # pixels
     padding=5, # pixels
     padding_color='#808080',
-    scale_factor=0.7, # account for the bg of the training images
+    scale_factor=0.9, # account for the bg of the training images
 )
 def get_img_size(rows, cols, square_size, padding):
     return SimpleNamespace(
@@ -241,4 +242,6 @@ if __name__ == '__main__':
 
     image_dir = sys.argv[1]
     label_dir = sys.argv[2]
+    print('image_dir:', image_dir)
+    print('label_dir:', label_dir)
     label_images(image_dir, label_dir)

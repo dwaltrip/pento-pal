@@ -26,7 +26,7 @@ rand_angle = lambda x: torch.randint(-x, x, (1,)).item()
 # ROTATION_AMOUNTS = [0, rand_angle(), rand_angle()]
 ROTATION_AMOUNTS = [0, 15, -15]
 
-def get_augmentations(base_img, base_label):
+def get_augmentations(base_img, base_label, include_rotations=False):
     def rotate(t_img, label, amount):
         assert amount <= 30, 'Assumes small rotation, else labels will be wrong'
         # Because it is a small rotation, we use the original label
@@ -39,14 +39,15 @@ def get_augmentations(base_img, base_label):
 
     all_possible_flips = [(*base_item, 'BASE'), *get_flips(*base_item)]
 
-    flips_plus_rotations = [
-        (*rotate(aug_img, aug_label, rot_amt), f'{desc} + r{rot_amt}')
-        for (aug_img, aug_label, desc) in all_possible_flips
-        for rot_amt in ROTATION_AMOUNTS
-    ]
-
-    # data_augmentations = all_possible_flips
-    data_augmentations = flips_plus_rotations
+    if not include_rotations:
+        data_augmentations =all_possible_flips
+    else:
+        flips_plus_rotations = [
+            (*rotate(aug_img, aug_label, rot_amt), f'{desc} + r{rot_amt}')
+            for (aug_img, aug_label, desc) in all_possible_flips
+            for rot_amt in ROTATION_AMOUNTS
+        ]
+        data_augmentations = flips_plus_rotations
 
     # drop the description (only for debugging)
     return [item[:2] for item in data_augmentations]
@@ -58,7 +59,7 @@ def get_flips(t_img, label):
     # Image dims are: [C, H, W]
     return [
         # Horizontal flip
-        (torch.flip(t_img, dims=[2]), torch.flip(label, dims=[1]), 'Horiz'),
+        # (torch.flip(t_img, dims=[2]), torch.flip(label, dims=[1]), 'Horiz'),
         # Vertical flip
         (torch.flip(t_img, dims=[1]), torch.flip(label, dims=[0]), 'Vert'),
         # Horizontal + Vertical flip

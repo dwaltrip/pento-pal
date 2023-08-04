@@ -84,7 +84,7 @@ class ExtractSubGrid(nn.Module):
         return slice_tensor(x, self.slice_specs)
 
     def __repr__(self):
-        attrs = ['y_slice', 'y_slice']
+        attrs = ['y_slice', 'x_slice']
         attr_str = ', '.join(f'{attr}={getattr(self, attr)}' for attr in attrs)
         return f'{self.__class__.__name__}({attr_str})'
 
@@ -101,7 +101,9 @@ class GridDetectionHead(nn.Module):
         # GRID_CONV_REDUCTION_FACTOR = 8
         kernel_size = 3
         grid_conv = dict(
-            reduction_factor=4,
+            # reduction_factor=16,
+            reduction_factor=8,
+            # reduction_factor=4,
             kernel_size=kernel_size,
             padding=kernel_size // 2,
         )
@@ -122,6 +124,12 @@ class GridDetectionHead(nn.Module):
                 kernel_size=grid_conv['kernel_size'],
                 padding=grid_conv['padding'],
             ),
+            # nn.Conv2d(
+            #     grid_conv_out_filters,
+            #     grid_conv_out_filters // 2,
+            #     kernel_size=grid_conv['kernel_size'],
+            #     padding=grid_conv['padding'],
+            # ),
             # ShapeLogger('Conv2d'),
             # Thesee values (2, -2) come from this calc: 10 - 6 / 2
             # TODO: don't hardcode this
@@ -130,6 +138,7 @@ class GridDetectionHead(nn.Module):
             nn.Flatten(start_dim=1),
             # ShapeLogger('Flatten'),
             nn.Linear(fc_in, fc_out),
+            # nn.Linear(in_features=int(fc_in / 2), out_features=fc_out),
         )
 
     def forward(self, x):
