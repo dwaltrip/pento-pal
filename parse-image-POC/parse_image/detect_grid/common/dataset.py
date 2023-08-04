@@ -57,6 +57,11 @@ class GridLabelDataset(Dataset):
         print(f'\t{len(self.prepped_data)} total training examples')
  
     def __getitem__(self, idx):
+        # Iteration will catch IndexErrors, but not errors such as a KeyError.
+        # self._idx_to_image_filename[idx] will throw a KeyError if idx is out of range.
+        # So we explicitly do this check first thing.
+        if idx >= len(self.prepped_data):
+            raise IndexError(f'Index {idx} out of range')
         self._image_files_used.add(self._idx_to_image_filename[idx])
         return self.prepped_data[idx]
 

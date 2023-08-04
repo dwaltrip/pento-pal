@@ -4,7 +4,7 @@ from types import SimpleNamespace
 
 PROJECT_ROOT = Path(__file__).parent.parent.absolute()
 
-AI_DATA_DIR = '/Users/danielwaltrip/all-files/projects/ai-data/'
+AI_DATA_DIR = '/Users/danielwaltrip/all-files/projects/ai-data/pentominoes'
 
 RESULTS_ROOT = 'runs'
 
