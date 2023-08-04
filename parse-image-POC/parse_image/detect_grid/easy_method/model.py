@@ -83,6 +83,11 @@ class ExtractSubGrid(nn.Module):
     def forward(self, x):
         return slice_tensor(x, self.slice_specs)
 
+    def __repr__(self):
+        attrs = ['y_slice', 'y_slice']
+        attr_str = ', '.join(f'{attr}={getattr(self, attr)}' for attr in attrs)
+        return f'{self.__class__.__name__}({attr_str})'
+
 
 class GridDetectionHead(nn.Module):
 
@@ -93,32 +98,44 @@ class GridDetectionHead(nn.Module):
         assert fm_h == fm_w, 'feature map should be square'
         assert fm_h >= grid_size, f'feature map height ({fm_h}) is not >= grid height ({grid_size})'
 
-        GRID_CONV_REDUCTION_FACTOR = 8
-        grid_conv_out_filters = backbone_out_filters // GRID_CONV_REDUCTION_FACTOR
+        # GRID_CONV_REDUCTION_FACTOR = 8
+        kernel_size = 3
+        grid_conv = dict(
+            reduction_factor=4,
+            kernel_size=kernel_size,
+            padding=kernel_size // 2,
+        )
+
+        grid_conv_out_filters = backbone_out_filters // grid_conv['reduction_factor']
         fc_in = 10 * 6 * grid_conv_out_filters
         # TODO: don't hardcode this
         fc_out = 10 * 6 * num_classes
         self.out_features = fc_out
 
-
         # TODO: shape log everything in a cleaner fashion
         self.layers = nn.Sequential(
             ResizeFeatureMap(grid_size),
-            ShapeLogger('ResizeFeatureMap'),
-            nn.Conv2d(backbone_out_filters, grid_conv_out_filters, kernel_size=3, padding=1),
-            ShapeLogger('Conv2d'),
+            # ShapeLogger('ResizeFeatureMap'),
+            nn.Conv2d(
+                backbone_out_filters,
+                grid_conv_out_filters,
+                kernel_size=grid_conv['kernel_size'],
+                padding=grid_conv['padding'],
+            ),
+            # ShapeLogger('Conv2d'),
             # Thesee values (2, -2) come from this calc: 10 - 6 / 2
             # TODO: don't hardcode this
             ExtractSubGrid(x_slice=dict(dim=-1, start=2, end=-2)),
-            ShapeLogger('ExtractSubGrid'),
+            # ShapeLogger('ExtractSubGrid'),
             nn.Flatten(start_dim=1),
-            ShapeLogger('Flatten'),
+            # ShapeLogger('Flatten'),
             nn.Linear(fc_in, fc_out),
         )
 
     def forward(self, x):
         x = self.layers(x)
-        return x.view(-1, self.out_features)
+        return x.view(-1, 10, 6, 12)
+        # return x.view(-1, self.out_features)
 
 
 def load_backbone(backbone_weights_path):

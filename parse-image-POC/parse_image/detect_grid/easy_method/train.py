@@ -33,7 +33,7 @@ def build_hyperparams(**kwargs):
         epochs=kwargs['epochs'],
         batch_size=(subset if subset else batch_size),
         lr=kwargs['lr'],
-        augment=kwargs['augment'],
+        augment=kwargs.get('augment', False),
         subset=subset,
         debug=kwargs.get('debug', False),
     )
@@ -63,10 +63,12 @@ def train_model(model, device, data_dir, save_path, hyp):
     val_size = len(dataset) - train_size
     train_dataset, val_dataset = random_split(dataset, [train_size, val_size])
 
-    # train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
-    # val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
-    train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
-    val_dataloader = []
+    if subset:
+        train_dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        val_dataloader = []
+    else:
+        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+        val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
 
     skip_validation = len(val_dataloader) == 0
 
@@ -110,6 +112,7 @@ def train_model(model, device, data_dir, save_path, hyp):
 
             # Forward pass
             outputs = model(inputs)
+            # print('outputs.shape', outputs.shape)
 
             # CrossEntropyLoss expects shape: [N, C, H, W]
             outputs_permuted = outputs.permute(0, 3, 1, 2)
@@ -164,15 +167,15 @@ if __name__ == '__main__':
     print('device:', device)
 
     hyp = build_hyperparams(
-        epochs=30,
+        epochs=50,
         batch_size=16,
         lr=0.003,
-        augment=True,
+        # augment=True,
         subset=None,
     )
     hyp_try_to_overfit = build_hyperparams(
         subset=2,
-        epochs=50,
+        epochs=100,
         lr=0.005,
         augment=False,
         # debug=True,
@@ -182,10 +185,10 @@ if __name__ == '__main__':
 
     import torchinfo
     torchinfo.summary(model, input_size=(2, 3, 224, 224))
-    assert False
+    # assert False
 
     data_dir = os.path.join(AI_DATA_DIR, 'detect-grid-easy--2023-08-03')
     save_path = os.path.join(PROJECT_ROOT, 'weights', 'grid-easy-model.pth')
 
-    # train_model(model, data_dir=data_dir, device=device, hyp=hyp)
-    train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp_try_to_overfit)
+    train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp) 
+    # train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp_try_to_overfit)
