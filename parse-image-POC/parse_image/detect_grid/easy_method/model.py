@@ -6,6 +6,7 @@ import torch.nn.functional as F
 from torchvision.models import resnet50, ResNet50_Weights
 
 from settings import NUM_CLASSES, GRID
+from parse_image.utils.slice_tensor import slice_tensor
 from parse_image.utils.misc import get_output_shape, count_params
 
 
@@ -64,21 +65,54 @@ class ResizeFeatureMap(nn.Module):
         return f'{self.__class__.__name__}({attr_str})'
 
 
+class ExtractSubGrid(nn.Module):
+    """Extract a sub-grid from a feature map."""
+    def __init__(self, y_slice=None, x_slice=None):
+        super().__init__()
+        self.y_slice = y_slice
+        self.x_slice = x_slice
+        self.slice_specs = []
+
+        if self.y_slice:
+            assert 'dim' in self.y_slice, 'must specify "dim"'
+            self.slice_specs.append(self.y_slice)
+        if self.x_slice:
+            assert 'dim' in self.x_slice, 'must specify "dim"'
+            self.slice_specs.append(self.x_slice)
+
+    def forward(self, x):
+        return slice_tensor(x, self.slice_specs)
+
+
 class GridDetectionHead(nn.Module):
 
     def __init__(self, grid_size, num_classes, feature_map_shape):
         super().__init__()
-        num_filters = feature_map_shape[0]
+        backbone_out_filters = feature_map_shape[0]
         fm_h, fm_w = feature_map_shape[-2:]
         assert fm_h == fm_w, 'feature map should be square'
         assert fm_h >= grid_size, f'feature map height ({fm_h}) is not >= grid height ({grid_size})'
 
-        fc_in = grid_size * grid_size * num_filters
-        fc_out = grid_size * grid_size * num_classes
+        GRID_CONV_REDUCTION_FACTOR = 8
+        grid_conv_out_filters = backbone_out_filters // GRID_CONV_REDUCTION_FACTOR
+        fc_in = 10 * 6 * grid_conv_out_filters
+        # TODO: don't hardcode this
+        fc_out = 10 * 6 * num_classes
         self.out_features = fc_out
 
+
+        # TODO: shape log everything in a cleaner fashion
         self.layers = nn.Sequential(
             ResizeFeatureMap(grid_size),
+            ShapeLogger('ResizeFeatureMap'),
+            nn.Conv2d(backbone_out_filters, grid_conv_out_filters, kernel_size=3, padding=1),
+            ShapeLogger('Conv2d'),
+            # Thesee values (2, -2) come from this calc: 10 - 6 / 2
+            # TODO: don't hardcode this
+            ExtractSubGrid(x_slice=dict(dim=-1, start=2, end=-2)),
+            ShapeLogger('ExtractSubGrid'),
+            nn.Flatten(start_dim=1),
+            ShapeLogger('Flatten'),
             nn.Linear(fc_in, fc_out),
         )
 

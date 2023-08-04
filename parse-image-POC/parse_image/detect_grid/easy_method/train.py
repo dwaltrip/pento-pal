@@ -159,8 +159,8 @@ def train_model(model, device, data_dir, save_path, hyp):
     print('Model saved to:', save_path)
 
 if __name__ == '__main__':
-    # device = 'cpu'
-    device = torch.device('mps') if IS_MPS_AVAILABLE else 'cpu'
+    device = 'cpu'
+    # device = torch.device('mps') if IS_MPS_AVAILABLE else 'cpu'
     print('device:', device)
 
     hyp = build_hyperparams(
@@ -179,6 +179,10 @@ if __name__ == '__main__':
     )
     backbone_weight_path = os.path.join(PROJECT_ROOT, 'weights', 'grid-easy-backbone.pth')
     model = get_custom_model(backbone_weight_path).to(device)
+
+    import torchinfo
+    torchinfo.summary(model, input_size=(2, 3, 224, 224))
+    assert False
 
     data_dir = os.path.join(AI_DATA_DIR, 'detect-grid-easy--2023-08-03')
     save_path = os.path.join(PROJECT_ROOT, 'weights', 'grid-easy-model.pth')
