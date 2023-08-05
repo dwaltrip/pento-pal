@@ -11,6 +11,7 @@ from parse_image.detect_grid.common.dataset import GridLabelDataset
 from parse_image.detect_grid.easy_method.model import get_custom_model
 
 from parse_image.detect_grid.easy_method.draw_grid_lines import add_grid_lines_and_show
+from parse_image.detect_grid.easy_method.loss import calculate_loss
 
 
 IS_MPS_AVAILABLE = torch.backends.mps.is_available()
@@ -116,7 +117,8 @@ def train_model(model, device, data_dir, save_path, hyp):
 
             # CrossEntropyLoss expects shape: [N, C, H, W]
             outputs_permuted = outputs.permute(0, 3, 1, 2)
-            loss = loss_fn(outputs_permuted, labels)
+            # loss = loss_fn(outputs_permuted, labels)
+            loss = calculate_loss(outputs_permuted, labels)
             epoch_training_loss += loss.item()
 
             # Backward pass and optimization
@@ -177,7 +179,7 @@ if __name__ == '__main__':
         subset=None,
     )
     hyp_try_to_overfit = build_hyperparams(
-        subset=2,
+        subset=1,
         epochs=100,
         lr=0.005,
         augment=False,
@@ -194,5 +196,5 @@ if __name__ == '__main__':
     data_dir = os.path.join(AI_DATA_DIR, 'detect-grid-easy--2023-08-03')
     save_path = os.path.join(PROJECT_ROOT, 'weights', 'grid-easy-model.pth')
 
-    train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp) 
-    # train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp_try_to_overfit)
+    # train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp) 
+    train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp_try_to_overfit)
