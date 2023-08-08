@@ -3,3 +3,5 @@ torch
 torchinfo
 torchvision
 ultralytics
+
+-e file:///Users/danielwaltrip/all-files/projects/code/my-ml-utils
