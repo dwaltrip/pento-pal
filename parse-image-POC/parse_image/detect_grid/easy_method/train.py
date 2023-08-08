@@ -73,7 +73,8 @@ def train_model(model, device, data_dir, save_path, hyp):
 
     skip_validation = len(val_dataloader) == 0
 
-    loss_fn = nn.CrossEntropyLoss()
+    # loss_fn = nn.CrossEntropyLoss()
+    loss_fn = calculate_loss
     optimizer = optim.Adam(model.parameters(), lr=lr)
     # optimizer = torch.optim.SGD(model.parameters(), lr=lr)
 
@@ -117,8 +118,7 @@ def train_model(model, device, data_dir, save_path, hyp):
 
             # CrossEntropyLoss expects shape: [N, C, H, W]
             outputs_permuted = outputs.permute(0, 3, 1, 2)
-            # loss = loss_fn(outputs_permuted, labels)
-            loss = calculate_loss(outputs_permuted, labels)
+            loss = loss_fn(outputs_permuted, labels)
             epoch_training_loss += loss.item()
 
             # Backward pass and optimization
@@ -126,15 +126,14 @@ def train_model(model, device, data_dir, save_path, hyp):
             loss.backward()
             optimizer.step()
 
+        print('\tstarting validation...')
         model.eval()
         with torch.no_grad():
             for i, (inputs, labels) in enumerate(val_dataloader):
                 inputs, labels = inputs.to(device), labels.to(device)
                 outputs = model(inputs)
-                N, H, W, C = outputs.shape
-                outputs_reshape = outputs.reshape(N * H * W, C)
-                labels_reshape = labels.reshape(N * H * W)
-                loss = loss_fn(outputs_reshape, labels_reshape)
+                outputs_permuted = outputs.permute(0, 3, 1, 2)
+                loss = loss_fn(outputs_permuted, labels)
                 epoch_validation_loss += loss.item()
 
         t1 = time.time()
@@ -196,5 +195,5 @@ if __name__ == '__main__':
     data_dir = os.path.join(AI_DATA_DIR, 'detect-grid-easy--2023-08-03')
     save_path = os.path.join(PROJECT_ROOT, 'weights', 'grid-easy-model.pth')
 
-    # train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp) 
-    train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp_try_to_overfit)
+    train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp) 
+    # train_model(model, data_dir=data_dir, device=device, save_path=save_path, hyp=hyp_try_to_overfit)

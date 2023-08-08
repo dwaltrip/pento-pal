@@ -3,9 +3,23 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
-
+_print = print
+def print(*args, **kwargs):
+    return
 def print_lines(*args, **kwargs):
     print(*args, **kwargs, sep='\n')
+
+
+def make_grad_logger(label):
+    def print_grad(grad):
+        has_nans = bool(grad.isnan().any())
+        if has_nans:
+            _print(f'[{label}] --- grad has nans!! --- grad:', grad, sep='\n')
+        else:
+            _print(f'[{label}] no nans, good grad :)')
+    return print_grad
+
+grad_logger_ppc = make_grad_logger('ppc')
 
 
 # each cell in the grid should have 1 to 4 matching neighbors
@@ -25,6 +39,7 @@ penalize_lt_1_or_gt_4_neighbors = mlu.build_smooth_piecewise_fn(
         base_penalty_fn, # 4 <  x
     ],
     points=VALID_MATCHING_NEIGHBORS_RANGE,
+    # temperature=1,
 )
 
 # kernel = torch.ones(1, 1, 3, 3)
@@ -33,7 +48,7 @@ kernel = torch.tensor([
     [0.5, 1.0, 0.5],
     [1.0, 0.0, 1.0],
     [0.5, 1.0, 0.5],
-]).unsqueeze(0).unsqueeze(0)
+]).unsqueeze(0).unsqueeze(0).to(torch.double)
 
 
 # def calc_disconnected_penalty(preds):
@@ -65,11 +80,15 @@ def calc_disconnected_penalty(grid_one_hot):
     print_lines('neighbor_counts:', neighbor_counts)
 
     penalties_per_cell = penalize_lt_1_or_gt_4_neighbors(neighbor_counts)
+
+    penalties_per_cell.retain_grad()
+    penalties_per_cell.register_hook(grad_logger_ppc)
+
     print()
     print_lines('penalties_per_cell:', penalties_per_cell)
     print()
     print_lines('penalties_per_cell * grid_one_hot:', penalties_per_cell * grid_one_hot)
-    disconnected_penalty = penalties_per_cell.float().mean()
+    disconnected_penalty = penalties_per_cell.double().mean()
     return disconnected_penalty
     
 
@@ -78,7 +97,7 @@ def calc_class_count_penalty(preds):
     # count number of cells predicted as each class
     preds_softmax_class_sums = preds_softmax.sum(dim=(2,3))
     # calculate absolute deviation from ideal count, then average
-    class_count_penalty = torch.abs(preds_softmax_class_sums - 5).float().mean()
+    class_count_penalty = torch.abs(preds_softmax_class_sums - 5).double().mean()
     return class_count_penalty
 
 
@@ -127,7 +146,52 @@ def main():
     print('--------')
     print_lines('grid_one_hot:', grid_one_hot)
 
-    dc_penalty = calc_disconnected_penalty(grid_one_hot.float())
+
+    def run_fn():
+        gradcheck_input = grid_one_hot.double()
+        gradcheck_input.requires_grad = True
+        out = calc_disconnected_penalty(gradcheck_input)
+        out.retain_grad()
+        _print('------------')
+        _print('out:', out)
+        _print(out.backward())
+        _print('out.grad:', out.grad)
+
+    # with torch.autograd.detect_anomaly(check_nan=True):
+    with torch.autograd.detect_anomaly(check_nan=False):
+        run_fn()
+    # run_fn()
+
+    # _print('-------------------------')
+
+    # gradcheck_input = grid_one_hot.double()
+    # gradcheck_input.requires_grad = True
+    # test = torch.autograd.gradcheck(
+    #     calc_disconnected_penalty, (gradcheck_input,), eps=1e-6, atol=1e-4,
+    # )
+    # _print('gradcheck:', test)
+
+    # _print('-------------------------')
+    # gradcheck_input = torch.randn(8, requires_grad=True)
+    # def print_grad(grad):
+    #     _print(grad)
+
+    # x = torch.tensor(1., requires_grad=True)
+    # y = penalize_lt_1_or_gt_4_neighbors(x)
+    # y.register_hook(print_grad)
+    # y.backward()
+    # _print('-------------------------')
+
+    # test = torch.autograd.gradcheck(
+    #     penalize_lt_1_or_gt_4_neighbors, (gradcheck_input,), eps=1e-6, atol=1e-4,
+    # )
+    # _print('gradcheck:', test)
+
+    assert False
+
+    dc_penalty = calc_disconnected_penalty(grid_one_hot.double())
+
+    print(dc_penalty)
 
     print()
     print('dc_penalty:', dc_penalty)
