@@ -9,7 +9,7 @@ def extract_grid_from_boxes(boxes):
 
 
 def try_to_get_grid_from_aligned_boxes(aligned_boxes):
-
+    pass
 
 
 def fit_boxes_to_grid(boxes):

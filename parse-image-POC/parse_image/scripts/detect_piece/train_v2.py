@@ -12,7 +12,7 @@ import sys
 from ultralytics import YOLO
 
 from settings import AI_DATA_DIR, PROJECT_ROOT, RESULTS_ROOT
-from utils import parse_script_args, write_yaml_file
+from parse_image.utils.misc import parse_script_args, write_yaml_file
 
 
 CLASS_NAMES = ['F', 'I', 'L', 'N', 'P', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
