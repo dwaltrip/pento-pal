@@ -1,4 +1,4 @@
-from parse_image.boxes_to_grid.pieces import *
+from parse_images.boxes_to_grid.pieces import *
 
 
 if __name__ == '__main__':
