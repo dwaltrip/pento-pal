@@ -34,14 +34,14 @@ class Piece:
     width = property(lambda self: len(self.grid[0]))
 
     @property
-    def all_variants(self):
+    def all_variant_grids(self):
         return [
             variant_grid
             for list_of_grids in self._variants_by_bbox_size.values()
             for variant_grid in list_of_grids
         ]
     
-    def get_variants_by_bbox_size(self, height, width):
+    def get_variant_grids_by_bbox_size(self, height, width):
         return self._variants_by_bbox_size[(height, width)]
     
     @classmethod

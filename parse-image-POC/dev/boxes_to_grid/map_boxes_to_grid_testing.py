@@ -34,6 +34,14 @@ class AlignedPieceBB:
 
     def print_grid(self, prefix=''):
         return Piece._print_grid(self.grid, prefix=prefix)  
+
+    def to_dict(self):
+        return dict(
+            name=self.name,
+            top_left=(self.top_left.y, self.top_left.x),
+            height=self.height,
+            width=self.width,
+        )
     
     def clone(self):
         return self.__class__(
@@ -153,6 +161,10 @@ if __name__ == '__main__':
             | ■ ■ ■ |
         ''')),
     ]
+
+    # import json
+    # print(json.dumps([x.to_dict() for x in aligned_boxes_SOLVED], indent=2))
+    # assert False
 
     grid_boxes = [
         GridBoxForPiece(
