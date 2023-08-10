@@ -1,3 +1,4 @@
+from collections import defaultdict
 
 EMPTY = 0
 FILLED = 1
@@ -27,7 +28,21 @@ class Piece:
     def __init__(self, name, grid):
         self.name = name
         self.grid = grid
-        self.variants = self._get_all_orientations()
+        self._variants_by_bbox_size = self._construct_all_orientations()
+    
+    height = property(lambda self: len(self.grid))
+    width = property(lambda self: len(self.grid[0]))
+
+    @property
+    def all_variants(self):
+        return [
+            variant_grid
+            for list_of_grids in self._variants_by_bbox_size.values()
+            for variant_grid in list_of_grids
+        ]
+    
+    def get_variants_by_bbox_size(self, height, width):
+        return self._variants_by_bbox_size[(height, width)]
     
     @classmethod
     def _print_grid(cls, grid, prefix=''):
@@ -38,13 +53,21 @@ class Piece:
     def print_grid(self, prefix=''):
         self._print_grid(self.grid, prefix=prefix)
     
-    def _get_all_orientations(self):
+    def _construct_all_orientations(self):
         # this includes the original grid
         flipped_grid = [row[::-1] for row in self.grid]
-        return dedupe_grids([
+        variant_grids = dedupe_grids([
             *[rotate_90(self.grid, n) for n in range(4)],
             *[rotate_90(flipped_grid, n) for n in range(4)],
         ])
+
+        grids_by_bbox_size = defaultdict(list)
+        for grid in variant_grids:
+            height, width = len(grid), len(grid[0])
+            grids_by_bbox_size[(height, width)].append(grid)
+        return grids_by_bbox_size
+
+
     
 
 PIECE_SHAPE_STRINGS = dict(
@@ -130,12 +153,14 @@ def parse_piece_string_to_grid(piece_str):
  
 
 def parse_piece_strings(piece_strings):
-    return [
-        Piece(
+    return {
+        name: Piece(
             name=name,
             grid=parse_piece_string_to_grid(piece_str),
         )
         for name, piece_str in piece_strings.items()
-    ]
-    
-PIECES = parse_piece_strings(PIECE_SHAPE_STRINGS)
+    }
+
+
+PIECES_BY_NAME = parse_piece_strings(PIECE_SHAPE_STRINGS)
+PIECES = PIECES_BY_NAME.values()

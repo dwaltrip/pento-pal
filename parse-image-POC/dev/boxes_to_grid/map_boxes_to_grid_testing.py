@@ -1,4 +1,5 @@
 from collections import namedtuple
+import random
 from types import SimpleNamespace
 
 import matplotlib.pyplot as plt
@@ -6,7 +7,10 @@ import numpy as np
 
 from settings import CLASS_MAPS
 from utils.color import hex_to_rgb
-# from parse_image.boxes_to_grid.map_boxes_to_grid import *
+from parse_image.boxes_to_grid.map_boxes_to_grid import (
+    GridBoxForPiece,
+    try_to_get_filled_grid_from_grid_boxes,
+)
 from parse_image.boxes_to_grid.pieces import (
     parse_piece_string_to_grid as parse_piece,
     Piece,
@@ -85,7 +89,7 @@ def build_viz_img_for_puzzle_grid(puzzle_grid):
 Point = namedtuple('Point', ['y', 'x'])
 
 if __name__ == '__main__':
-    aligned_boxes = [
+    aligned_boxes_SOLVED = [
         AlignedPieceBB('p', top_left=Point(0, 0), grid=parse_piece('''
             | ■   |
             | ■ ■ |
@@ -150,16 +154,33 @@ if __name__ == '__main__':
         ''')),
     ]
 
+    grid_boxes = [
+        GridBoxForPiece(
+            name=x.name,
+            top_left=x.top_left,
+            height=x.height,
+            width=x.width,
+        )
+        for x in aligned_boxes_SOLVED
+    ]
+    try_to_get_filled_grid_from_grid_boxes(grid_boxes)
+
+    # for box in grid_boxes:
+    #     print(box.name)
+    #     box.print_grid(prefix='\t')
+    #     print()
+
+
     # for box in aligned_boxes:
     #     print(box.name)
     #     box.print_grid(prefix='\t')
     #     print() 
 
-    puzzle_grid = aligned_boxes_to_puzzle_grid(aligned_boxes)
-    print()
-    print(*[' '.join(row) for row in puzzle_grid], sep='\n')
+    # puzzle_grid = aligned_boxes_to_puzzle_grid(aligned_boxes)
+    # print()
+    # print(*[' '.join(row) for row in puzzle_grid], sep='\n')
 
-    viz_img = build_viz_img_for_puzzle_grid(puzzle_grid)
-    plt.imshow(viz_img)
-    plt.axis('off')
-    plt.show()
+    # viz_img = build_viz_img_for_puzzle_grid(puzzle_grid)
+    # plt.imshow(viz_img)
+    # plt.axis('off')
+    # plt.show()
