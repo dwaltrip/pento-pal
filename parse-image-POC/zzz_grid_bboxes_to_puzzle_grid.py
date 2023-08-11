@@ -66,11 +66,11 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
     root = TreeNode(None, None, puzzle_grid_state, None)
     nodes_to_check = [root]
 
+    iteration_counts = 0
+
     # Iterate through nodes_to_check
     while nodes_to_check:
         current_node = nodes_to_check.pop(0)
-        print('-------------')
-        print('current_node:', current_node.piece_type)
 
         puzzle_grid_state = current_node.puzzle_grid_state
 
@@ -79,34 +79,34 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
             for row in puzzle_grid_state for piece_name in row
             if piece_name
         ])
-        print('placed_pieces:', (','.join(placed_pieces) if placed_pieces else None))
 
-        if len(placed_pieces) == 2:
-            print('------------------------------------')
-            print('puzzle_grid_state:\n' + '\n'.join([
-                ''.join([(cell or '_') for cell in row])
-                for row in puzzle_grid_state
-            ]))
-            print('bboxes:', *bboxes, sep='\n\t')
-            print()
+        print()
+        print('----------------------')
+        # print('current_node:', current_node.piece_type)
+        print(
+            'prev piece:', current_node.piece_type,
+            '-- placed pieces:', (', '.join(placed_pieces) if placed_pieces else None)
+        )
+        print(f'puzzle_grid_state -- iteration {iteration_counts}\n' + '\n'.join([
+            ' '.join([(cell or '_') for cell in row])
+            for row in puzzle_grid_state
+        ]))
+        iteration_counts += 1
 
         # Find the next nearest piece
-        current_piece = None
         current_piece = next(
             (bbox for bbox in bboxes if bbox['name'] not in placed_pieces),
             None,
         )
-        print('current_piece:', current_piece)
+        # print('current_piece:', current_piece)
 
         # If all pieces placed, this is a solution
         if current_piece is None:
-            print()
             print('SOLUTION FOUND!')
-            print()
-            print('puzzle_grid_state:\n' + '\n'.join([
-                ' '.join([(cell or '_') for cell in row])
-                for row in puzzle_grid_state
-            ]))
+            # print('puzzle_grid_state:\n' + '\n'.join([
+            #     ' '.join([(cell or '_') for cell in row])
+            #     for row in puzzle_grid_state
+            # ]))
             break
         
         # Iterate over each possible orientation
@@ -115,9 +115,8 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
             current_piece['height'],
             current_piece['width'],
         )
+        valid_orientations_count = 0
         for orientation in possible_orientations:
-            print('\torientation:', orientation)
-            
             # Check if the orientation is valid and update the puzzle grid
             if is_valid_orientation(puzzle_grid_state, current_piece, orientation):
                 new_puzzle_grid_state = [row.copy() for row in current_node.puzzle_grid_state]
@@ -131,7 +130,9 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
                 )
                 current_node.add_child(new_node)
                 nodes_to_check.append(new_node)
-            # else:
+                valid_orientations_count += 1
+        # print('\tnum valid orientations:', valid_orientations_count, '/', len(possible_orientations))
+            
 
     # Walk up the tree to collect the result
     result_pieces = []
@@ -149,12 +150,6 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
 
 def is_valid_orientation(puzzle_grid_state, piece, orientation):
     top_left = piece['top_left']
-    # print('-- is_valid_orientation --',
-    #     'top_left:', piece['top_left'],
-    #     f'puzzle_grid[tl.y][tl.x]: {puzzle_grid_state[top_left_y][top_left_x]}',
-    #     f'orientation.size: ({orientation.height}, {orientation.width})',
-    #     sep='\n\t',
-    # )
     for row in range(orientation.height):
         for col in range(orientation.width):
             if (
@@ -162,27 +157,15 @@ def is_valid_orientation(puzzle_grid_state, piece, orientation):
                 (puzzle_grid_state[top_left.y + row][top_left.x + col] is not None)
             ):
                 return False
-    # print('\t\t', 'valid orientation!', sep='')
     return True
 
 
 def update_puzzle_grid(puzzle_grid_state, piece, orientation):
-    # print('-- update_puzzle_grid --')
-    # print('\tpiece:', piece)
-    # print('\tpuzzle_grid_state (before):\n' + '\n'.join([
-    #     ''.join([(cell or '_') for cell in row])
-    #     for row in puzzle_grid_state
-    # ]))
     top_left = piece['top_left']
     for row in range(orientation.height):
         for col in range(orientation.width):
             if orientation.grid[row][col]:
                 puzzle_grid_state[top_left.y + row][top_left.x + col] = piece['name']
-    # print('\tpuzzle_grid_state (after):\n' + '\n'.join([
-    #     ''.join([(cell or '_') for cell in row])
-    #     for row in puzzle_grid_state
-    # ]))
-    
 
 
 if __name__ == '__main__':
