@@ -1,7 +1,7 @@
 from collections import namedtuple
 from parse_image.boxes_to_grid.pieces import PIECES_BY_NAME
 
-
+Point = namedtuple('Point', ['y', 'x'])
 Orientation = namedtuple('Orientation', ['piece_name', 'height', 'width', 'grid'])
 
 def get_orientations_for_piece(piece_name, height, width):
@@ -54,7 +54,7 @@ class TreeNode:
 def try_to_get_filled_grid_from_bbox_info(bboxes):
     bboxes = bboxes.copy()
     # Sort bounding boxes by top_left point
-    bboxes.sort(key=lambda bbox: (bbox['top_left'][1], bbox['top_left'][0]))
+    bboxes.sort(key=lambda bbox: (bbox['top_left'].y, bbox['top_left'].x))
     
     # Initialize puzzle grid
     puzzle_grid_state = [
@@ -92,29 +92,21 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
 
         # Find the next nearest piece
         current_piece = None
-        for row in range(10):
-            for col in range(6):
-                is_empty_cell = puzzle_grid_state[row][col] is None
-                if len(placed_pieces) == 2:
-                    print('\t(row, col):', (row, col), 'empty?:', is_empty_cell)
-                if is_empty_cell:
-                    current_piece = next(
-                        (bbox for bbox in bboxes if (
-                            bbox['name'] not in placed_pieces and
-                            bbox['top_left'] == (row, col)
-                        )),
-                        None,
-                    )
-                    print('\t\tinside loop - current_piece:', current_piece)
-                    break
-            if current_piece:
-                print('\tfound new current_piece:', current_piece)
-                break
+        current_piece = next(
+            (bbox for bbox in bboxes if bbox['name'] not in placed_pieces),
+            None,
+        )
+        print('current_piece:', current_piece)
 
         # If all pieces placed, this is a solution
         if current_piece is None:
             print()
             print('SOLUTION FOUND!')
+            print()
+            print('puzzle_grid_state:\n' + '\n'.join([
+                ' '.join([(cell or '_') for cell in row])
+                for row in puzzle_grid_state
+            ]))
             break
         
         # Iterate over each possible orientation
@@ -156,8 +148,7 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
 
 
 def is_valid_orientation(puzzle_grid_state, piece, orientation):
-    top_left_x, top_left_y = piece['top_left']
-
+    top_left = piece['top_left']
     # print('-- is_valid_orientation --',
     #     'top_left:', piece['top_left'],
     #     f'puzzle_grid[tl.y][tl.x]: {puzzle_grid_state[top_left_y][top_left_x]}',
@@ -166,10 +157,14 @@ def is_valid_orientation(puzzle_grid_state, piece, orientation):
     # )
     for row in range(orientation.height):
         for col in range(orientation.width):
-            if orientation.grid[row][col] and (puzzle_grid_state[top_left_y + row][top_left_x + col] is not None):
+            if (
+                orientation.grid[row][col] and
+                (puzzle_grid_state[top_left.y + row][top_left.x + col] is not None)
+            ):
                 return False
     # print('\t\t', 'valid orientation!', sep='')
     return True
+
 
 def update_puzzle_grid(puzzle_grid_state, piece, orientation):
     # print('-- update_puzzle_grid --')
@@ -178,11 +173,11 @@ def update_puzzle_grid(puzzle_grid_state, piece, orientation):
     #     ''.join([(cell or '_') for cell in row])
     #     for row in puzzle_grid_state
     # ]))
-    top_left_y, top_left_x = piece['top_left']
+    top_left = piece['top_left']
     for row in range(orientation.height):
         for col in range(orientation.width):
             if orientation.grid[row][col]:
-                puzzle_grid_state[top_left_y + row][top_left_x + col] = piece['name']
+                puzzle_grid_state[top_left.y + row][top_left.x + col] = piece['name']
     # print('\tpuzzle_grid_state (after):\n' + '\n'.join([
     #     ''.join([(cell or '_') for cell in row])
     #     for row in puzzle_grid_state
@@ -267,11 +262,13 @@ if __name__ == '__main__':
         }
     ]
     for box in bboxes:
-        box['top_left'] = tuple(box['top_left'])
+        y, x = box['top_left']
+        box['top_left'] = Point(y=y, x=x)
 
     puzzle_grid = try_to_get_filled_grid_from_bbox_info(bboxes)
     print()
     print('----- puzzle_grid -----')
     print()
-    print(puzzle_grid)
+    for piece in puzzle_grid:
+        print(piece)
 
