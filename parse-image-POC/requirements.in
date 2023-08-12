@@ -1,6 +1,7 @@
 imagehash
 matplotlib
 numpy
+rich
 torch
 torchvision
 ultralytics

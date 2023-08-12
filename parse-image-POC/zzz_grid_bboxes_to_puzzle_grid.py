@@ -1,6 +1,26 @@
 from collections import namedtuple
 from parse_image.boxes_to_grid.pieces import PIECES_BY_NAME
 
+import rich
+from rich.console import Console
+from rich.style import Style
+
+from settings import CLASS_MAPS
+
+
+rich_console = Console()
+palette = rich.color.EIGHT_BIT_PALETTE
+tui_colors_for_piece = dict()
+
+for name, hex_color in CLASS_MAPS.name_to_color.items():
+    if name == 'i':
+        color_triplet = palette[243] # black won't show in terminal
+    else:
+        color_triplet = palette[palette.match(rich.color.parse_rgb_hex(hex_color[1:]))]
+    tui_colors_for_piece[name] = rich.color.Color.from_triplet(color_triplet)
+
+
+
 Point = namedtuple('Point', ['y', 'x'])
 Orientation = namedtuple('Orientation', ['piece_name', 'height', 'width', 'grid'])
 
@@ -33,7 +53,8 @@ class Piece:
             
 
 class TreeNode:
-    def __init__(self,
+    def __init__(
+        self,
         piece_type,
         bbox_info,
         puzzle_grid_state,
@@ -51,7 +72,7 @@ class TreeNode:
         self.children.append(child)
 
 
-def try_to_get_filled_grid_from_bbox_info(bboxes):
+def try_to_get_filled_grid_from_grid_boxes(bboxes):
     bboxes = bboxes.copy()
     # Sort bounding boxes by top_left point
     bboxes.sort(key=lambda bbox: (bbox['top_left'].y, bbox['top_left'].x))
@@ -82,15 +103,12 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
 
         print()
         print('----------------------')
-        # print('current_node:', current_node.piece_type)
         print(
             'prev piece:', current_node.piece_type,
             '-- placed pieces:', (', '.join(placed_pieces) if placed_pieces else None)
         )
-        print(f'puzzle_grid_state -- iteration {iteration_counts}\n' + '\n'.join([
-            ' '.join([(cell or '_') for cell in row])
-            for row in puzzle_grid_state
-        ]))
+        print(f'puzzle_grid_state -- iteration {iteration_counts}')
+        print_puzzle_grid_state(puzzle_grid_state)
         iteration_counts += 1
 
         # Find the next nearest piece
@@ -98,15 +116,11 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
             (bbox for bbox in bboxes if bbox['name'] not in placed_pieces),
             None,
         )
-        # print('current_piece:', current_piece)
 
         # If all pieces placed, this is a solution
         if current_piece is None:
+            print()
             print('SOLUTION FOUND!')
-            # print('puzzle_grid_state:\n' + '\n'.join([
-            #     ' '.join([(cell or '_') for cell in row])
-            #     for row in puzzle_grid_state
-            # ]))
             break
         
         # Iterate over each possible orientation
@@ -131,7 +145,6 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
                 current_node.add_child(new_node)
                 nodes_to_check.append(new_node)
                 valid_orientations_count += 1
-        # print('\tnum valid orientations:', valid_orientations_count, '/', len(possible_orientations))
             
 
     # Walk up the tree to collect the result
@@ -146,6 +159,17 @@ def try_to_get_filled_grid_from_bbox_info(bboxes):
     result_pieces.reverse()
 
     return result_pieces  # Return the list of 12 pieces with specific orientation
+
+
+def print_puzzle_grid_state(puzzle_grid_state):
+    for row in puzzle_grid_state:
+        for cell in row:
+            if cell:
+                color = tui_colors_for_piece[cell]
+                rich_console.print(cell, style=Style(color=color), end=' ')
+            else:
+                print('_', end=' ')
+        print()
 
 
 def is_valid_orientation(puzzle_grid_state, piece, orientation):
@@ -169,80 +193,19 @@ def update_puzzle_grid(puzzle_grid_state, piece, orientation):
 
 
 if __name__ == '__main__':
-
     bboxes = [
-        {
-            "name": "p",
-            "top_left": [0, 0],
-            "height": 3,
-            "width": 2
-        },
-        {
-            "name": "y",
-            "top_left": [0, 1],
-            "height": 2,
-            "width": 4
-        },
-        {
-            "name": "n",
-            "top_left": [ 0, 4 ],
-            "height": 4,
-            "width": 2
-        },
-        {
-            "name": "f",
-            "top_left": [ 1, 1 ],
-            "height": 3,
-            "width": 3
-        },
-        {
-            "name": "l",
-            "top_left": [ 2, 4 ],
-            "height": 4,
-            "width": 2
-        },
-        {
-            "name": "i",
-            "top_left": [ 3, 0 ],
-            "height": 5,
-            "width": 1
-        },
-        {
-            "name": "x",
-            "top_left": [ 3, 2 ],
-            "height": 3,
-            "width": 3
-        },
-        {
-            "name": "w",
-            "top_left": [ 4, 1 ],
-            "height": 3,
-            "width": 3
-        },
-        {
-            "name": "t",
-            "top_left": [ 6, 1 ],
-            "height": 3,
-            "width": 3
-        },
-        {
-            "name": "z",
-            "top_left": [ 6, 3 ],
-            "height": 3,
-            "width": 3
-        },
-        {
-            "name": "v",
-            "top_left": [ 7, 3 ],
-            "height": 3,
-            "width": 3
-        },
-        {
-            "name": "u",
-            "top_left": [ 8, 0 ],
-            "height": 2,
-            "width": 3
-        }
+        { "name": "p", "top_left": [0, 0], "height": 3, "width": 2 },
+        { "name": "y", "top_left": [0, 1], "height": 2, "width": 4 },
+        { "name": "n", "top_left": [ 0, 4 ], "height": 4, "width": 2 },
+        { "name": "f", "top_left": [ 1, 1 ], "height": 3, "width": 3 },
+        { "name": "l", "top_left": [ 2, 4 ], "height": 4, "width": 2 },
+        { "name": "i", "top_left": [ 3, 0 ], "height": 5, "width": 1 },
+        { "name": "x", "top_left": [ 3, 2 ], "height": 3, "width": 3 },
+        { "name": "w", "top_left": [ 4, 1 ], "height": 3, "width": 3 },
+        { "name": "t", "top_left": [ 6, 1 ], "height": 3, "width": 3 },
+        { "name": "z", "top_left": [ 6, 3 ], "height": 3, "width": 3 },
+        { "name": "v", "top_left": [ 7, 3 ], "height": 3, "width": 3 },
+        { "name": "u", "top_left": [ 8, 0 ], "height": 2, "width": 3 }
     ]
     for box in bboxes:
         y, x = box['top_left']
