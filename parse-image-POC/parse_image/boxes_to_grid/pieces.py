@@ -1,9 +1,18 @@
-from collections import defaultdict
+from collections import defaultdict, namedtuple
+
 
 EMPTY = 0
 FILLED = 1
 EMPTY_CHAR = ' '
 FILLED_CHAR = '■'
+
+
+Orientation = namedtuple('Orientation', [
+    'piece_type',
+    'height',
+    'width',
+    'grid'],
+)
 
 
 # clockwise
@@ -28,21 +37,21 @@ class Piece:
     def __init__(self, name, grid):
         self.name = name
         self.grid = grid
-        self._variants_by_bbox_size = self._construct_all_orientations()
+        self._orientations_by_bbox_size = self._construct_all_orientations()
     
     height = property(lambda self: len(self.grid))
     width = property(lambda self: len(self.grid[0]))
 
     @property
-    def all_variant_grids(self):
+    def all_orientations(self):
         return [
-            variant_grid
-            for list_of_grids in self._variants_by_bbox_size.values()
-            for variant_grid in list_of_grids
+            orientation    
+            for orientations_list in self._orientations_by_bbox_size.values()
+            for orientation in orientations_list
         ]
     
-    def get_variant_grids_by_bbox_size(self, height, width):
-        return self._variants_by_bbox_size[(height, width)]
+    def get_orientations_by_bbox_size(self, height, width):
+        return self._orientations_by_bbox_size[(height, width)]
     
     @classmethod
     def _print_grid(cls, grid, prefix=''):
@@ -61,14 +70,17 @@ class Piece:
             *[rotate_90(flipped_grid, n) for n in range(4)],
         ])
 
-        grids_by_bbox_size = defaultdict(list)
+        orientations_by_bbox_size = defaultdict(list)
         for grid in variant_grids:
             height, width = len(grid), len(grid[0])
-            grids_by_bbox_size[(height, width)].append(grid)
-        return grids_by_bbox_size
+            orientations_by_bbox_size[(height, width)].append(Orientation(
+                piece_type=self.name,
+                height=height,
+                width=width,
+                grid=grid,
+            ))
+        return orientations_by_bbox_size
 
-
-    
 
 PIECE_SHAPE_STRINGS = dict(
     f= '''
