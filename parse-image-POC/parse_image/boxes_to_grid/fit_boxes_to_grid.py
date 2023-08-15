@@ -36,7 +36,11 @@ class BoundingBox:
 
         top_left = Point(y=y_center - height / 2, x=x_center - width / 2)
         bot_right = Point(y=top_left.y + height, x=top_left.x + width)
-        return BoundingBox(class_id=int(class_id), top_left=top_left, bot_right=bot_right)
+        return BoundingBox(
+            class_id=int(class_id),
+            top_left=top_left,
+            bot_right=bot_right,
+        )
 
 
 def load_obj_detect_training_files(data_dir):
@@ -52,8 +56,10 @@ def load_obj_detect_training_files(data_dir):
 
     training_files = []
     for image_file in image_files:
+        label_file = Path(image_file).with_suffix('.txt')
         image_path = os.path.join(images_dir, image_file)
-        label_path = os.path.join(labels_dir, Path(image_file).with_suffix('.txt'))
+        label_path = os.path.join(labels_dir, label_file)
+
         image = Image.open(image_path)
         boxes = read_label_file(label_path, image.width, image.height)
         training_files.append((image, boxes))

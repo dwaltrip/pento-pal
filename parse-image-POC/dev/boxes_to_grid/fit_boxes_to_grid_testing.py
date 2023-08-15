@@ -37,6 +37,61 @@ def draw_bbox_points(boxes):
 
 # ----------------------------------------------------------
 
+Rect = namedtuple('Rect', ['height', 'width'])
+fmt_rect = lambda r: f'{r.height:.0f} x {r.width:.0f}'
+
+CLASS_BBOX_RECT = {
+    'f': Rect(height=3, width=3),
+    'i': Rect(height=5, width=1),
+    'l': Rect(height=4, width=2),
+    'n': Rect(height=4, width=2),
+    'p': Rect(height=3, width=2),
+    't': Rect(height=3, width=3),
+    'u': Rect(height=3, width=2),
+    'v': Rect(height=3, width=3),
+    'w': Rect(height=3, width=3),
+    'x': Rect(height=3, width=3),
+    'y': Rect(height=4, width=2),
+    'z': Rect(height=3, width=3),
+}
+
+def zzz_estimate_grid_cell_size(box):
+    rect = CLASS_BBOX_RECT[CLASS_NAMES[box.class_id]]
+    is_asymmetric = rect.height != rect.width
+    
+    estimate = Rect(
+        height=box.height / float(rect.height),
+        width=box.width / float(rect.width),
+    )
+    if is_asymmetric:
+        estimate2 = Rect(
+            height=box.height / float(rect.width),
+            width=box.width / float(rect.height),
+        )
+        diff = abs(estimate.height - estimate.width)
+        diff2 = abs(estimate2.height - estimate2.width)
+        print(f'\testimate: {fmt_rect(estimate)} -- diff: {diff:.0f}')
+        print(f'\testimate2: {fmt_rect(estimate2)} -- diff: {diff2:.0f}')
+        if diff > diff2:
+            estimate = estimate2
+    else:
+        print('\testimate:', fmt_rect(estimate))
+
+    return (estimate.height + estimate.width) / 2.0
+
+
+def main2(training_files):
+    image, boxes = training_files[0]
+    estimates = []
+    for box in boxes:
+        print(f'\npiece "{box.piece_type.upper()}"')
+        estimates.append(zzz_estimate_grid_cell_size(box))
+    print('\n\n')
+    for est in estimates:
+        print(round(est, 0))
+
+# ----------------------------------------------------------
+
 def main(training_files):
     image, boxes = training_files[0]
     draw = ImageDraw.Draw(image)
@@ -60,4 +115,6 @@ if __name__ == '__main__':
             'ls-yolo-export--2023-07-26',
         )
     )
-    main(training_files)
+
+    # main(training_files)
+    main2(training_files)
