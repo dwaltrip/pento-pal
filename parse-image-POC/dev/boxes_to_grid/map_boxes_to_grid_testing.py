@@ -94,7 +94,7 @@ def build_viz_img_for_puzzle_grid(puzzle_grid):
     return viz_img
 
 
-Point = namedtuple('Point', ['y', 'x'])
+Point = namedtuple('Point', ['x', 'y'])
 
 if __name__ == '__main__':
     aligned_boxes_SOLVED = [
@@ -103,11 +103,11 @@ if __name__ == '__main__':
             | ■ ■ |
             | ■ ■ |
         ''')),
-        AlignedPieceBB('y', top_left=Point(0, 1), grid=parse_piece('''
+        AlignedPieceBB('y', top_left=Point(1, 0), grid=parse_piece('''
             | ■ ■ ■ ■ |
             |     ■   |
         ''')),
-        AlignedPieceBB('n', top_left=Point(0, 4), grid=parse_piece('''
+        AlignedPieceBB('n', top_left=Point(4, 0), grid=parse_piece('''
             |   ■ |
             | ■ ■ |
             | ■   |
@@ -118,45 +118,45 @@ if __name__ == '__main__':
             |   ■ ■ |
             | ■ ■   |
         ''')),
-        AlignedPieceBB('l', top_left=Point(2, 4), grid=parse_piece('''
+        AlignedPieceBB('l', top_left=Point(4, 2), grid=parse_piece('''
             |   ■ |
             |   ■ |
             |   ■ |
             | ■ ■ |
         ''')),
-        AlignedPieceBB('i', top_left=Point(3, 0), grid=parse_piece('''
+        AlignedPieceBB('i', top_left=Point(0, 3), grid=parse_piece('''
             | ■ |
             | ■ |
             | ■ |
             | ■ |
             | ■ |
         ''')),
-        AlignedPieceBB('x', top_left=Point(3, 2), grid=parse_piece('''
+        AlignedPieceBB('x', top_left=Point(2, 3), grid=parse_piece('''
             |   ■   |
             | ■ ■ ■ |
             |   ■   |
         ''')),
-        AlignedPieceBB('w', top_left=Point(4, 1), grid=parse_piece('''
+        AlignedPieceBB('w', top_left=Point(1, 4), grid=parse_piece('''
             | ■     |
             | ■ ■   |
             |   ■ ■ |
         ''')),
-        AlignedPieceBB('t', top_left=Point(6, 1), grid=parse_piece('''
+        AlignedPieceBB('t', top_left=Point(1, 6), grid=parse_piece('''
             | ■     |
             | ■ ■ ■ |
             | ■     |
         ''')),
-        AlignedPieceBB('z', top_left=Point(6, 3), grid=parse_piece('''
+        AlignedPieceBB('z', top_left=Point(3, 6), grid=parse_piece('''
             |   ■ ■ |
             |   ■   |
             | ■ ■   |
         ''')),
-        AlignedPieceBB('v', top_left=Point(7, 3), grid=parse_piece('''
+        AlignedPieceBB('v', top_left=Point(3, 7), grid=parse_piece('''
             |     ■ |
             |     ■ |
             | ■ ■ ■ |
         ''')),
-        AlignedPieceBB('u', top_left=Point(8, 0), grid=parse_piece('''
+        AlignedPieceBB('u', top_left=Point(0, 8), grid=parse_piece('''
             | ■   ■ |
             | ■ ■ ■ |
         ''')),
