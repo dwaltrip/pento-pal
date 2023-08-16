@@ -1,6 +1,7 @@
 imagehash
 matplotlib
 numpy
+ptpython
 rich
 torch
 torchvision

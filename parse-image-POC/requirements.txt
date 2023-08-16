@@ -4,6 +4,8 @@
 #
 #    pip-compile requirements.in
 #
+appdirs==1.4.4
+    # via ptpython
 certifi==2023.5.7
     # via
     #   requests
@@ -22,6 +24,8 @@ idna==3.4
     # via requests
 imagehash==4.3.1
     # via -r requirements.in
+jedi==0.19.0
+    # via ptpython
 jinja2==3.1.2
     # via torch
 kiwisolver==1.4.4
@@ -61,16 +65,24 @@ pandas==2.0.1
     # via
     #   seaborn
     #   ultralytics
+parso==0.8.3
+    # via jedi
 pillow==9.5.0
     # via
     #   imagehash
     #   matplotlib
     #   torchvision
     #   ultralytics
+prompt-toolkit==3.0.39
+    # via ptpython
 psutil==5.9.5
     # via ultralytics
+ptpython==3.0.23
+    # via -r requirements.in
 pygments==2.16.1
-    # via rich
+    # via
+    #   ptpython
+    #   rich
 pyparsing==3.0.9
     # via matplotlib
 python-dateutil==2.8.2
@@ -122,3 +134,5 @@ urllib3==1.26.16
     # via
     #   requests
     #   sentry-sdk
+wcwidth==0.2.6
+    # via prompt-toolkit
