@@ -88,7 +88,7 @@ class PixelGrid:
             f'cell_size={self.cell_size},',
             f'rows={self.rows},',
             f'cols={self.cols})',
-        ]
+        ])
 
 
 def estimate_alignment_error(grid, bounding_boxes):

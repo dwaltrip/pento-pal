@@ -1,4 +1,5 @@
 from collections import defaultdict, namedtuple
+from dataclasses import dataclass
 
 
 EMPTY = 0
@@ -13,7 +14,24 @@ Orientation = namedtuple('Orientation', [
     'width',
     'grid',
 ])
-GridShape = namedtuple('GridShape', ['height', 'width'])
+
+
+@dataclass
+class GridShape:
+    height: int
+    width: int
+
+    def __repr__(self):
+        return f'({self.height} x {self.width})'
+
+@dataclass
+class FloatingRect:
+    """ Floating rect: no position, just size """
+    height: float
+    width: float
+
+    def __repr__(self):
+        return f'({self.height:0.2f} x {self.width:0.2f})'
 
 
 # clockwise
