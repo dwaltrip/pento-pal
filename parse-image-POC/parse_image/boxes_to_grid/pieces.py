@@ -11,8 +11,9 @@ Orientation = namedtuple('Orientation', [
     'piece_type',
     'height',
     'width',
-    'grid'],
-)
+    'grid',
+])
+GridShape = namedtuple('GridShape', ['height', 'width'])
 
 
 # clockwise
@@ -37,6 +38,7 @@ class Piece:
     def __init__(self, name, grid):
         self.name = name
         self.grid = grid
+        # TODO: This is "piece-type" level data, not instance data.
         self._orientations_by_bbox_size = self._construct_all_orientations()
     
     height = property(lambda self: len(self.grid))
@@ -50,8 +52,16 @@ class Piece:
             for orientation in orientations_list
         ]
     
+    # TODO: rename this, it's not a "bbox". It's a rectangle on the puzzle grid.
     def get_orientations_by_bbox_size(self, height, width):
         return self._orientations_by_bbox_size[(height, width)]
+
+    # TODO: This is "piece-type" level data, not instance data.
+    def grid_shapes(self):
+        return [
+            GridShape(*shape)
+            for shape in self._orientations_by_bbox_size.keys()
+        ]
     
     @classmethod
     def _print_grid(cls, grid, prefix=''):
@@ -175,4 +185,4 @@ def parse_piece_strings(piece_strings):
 
 
 PIECES_BY_NAME = parse_piece_strings(PIECE_SHAPE_STRINGS)
-PIECES = PIECES_BY_NAME.values()
+PIECES = list(PIECES_BY_NAME.values())
