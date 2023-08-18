@@ -6,16 +6,21 @@ Example usage:
         weights/yolov8s-pose.pt
 """
 import os
-import pathlib
-import sys
-
+from pathlib import Path
 from ultralytics import YOLO
 
 from settings import AI_DATA_DIR, PROJECT_ROOT, RESULTS_ROOT
 from parse_image.utils.misc import parse_script_args, write_yaml_file
 
 
-CLASS_NAMES = ['PB']
+BASE_MODEL_WEIGHT_FILE_NAMES = dict(
+    nano='yolov5n-pose.pt',
+    small='yolov8s-pose.pt',
+    medium='yolov8m-pose.pt',
+    large='yolov8l-pose.pt',
+)
+
+PUZZLE_BOX_DETECT_CLASS_NAMES = ['puzzle-box']
 KEYPOINTS = ['top-left', 'top-right', 'bot-right', 'bot-left']
 
 
@@ -34,36 +39,38 @@ def setup_train_args(dataset_dir, results_dirname, other_args):
         PROJECT_ROOT,
         RESULTS_ROOT,
         '_datasets_',
-        pathlib.Path(results_dirname).with_suffix('.yaml'),
+        Path(results_dirname).with_suffix('.yaml'),
     )
     yaml_data = dict(
         **build_dataset_paths(dataset_dir),
-        nc=len(CLASS_NAMES),
+        nc=len(PUZZLE_BOX_DETECT_CLASS_NAMES),
+        names=PUZZLE_BOX_DETECT_CLASS_NAMES,
         kpt_shape=[len(KEYPOINTS), 2],
-        names=CLASS_NAMES,
     )
     write_yaml_file(yaml_path, yaml_data)
 
     return dict(
         data=yaml_path,
-        # 'project', 'name' are required or the save_dir is in my old project.
         project=RESULTS_ROOT,
         name=results_dirname,
         **other_args,
     )
 
 
-# training_data_dir:
-#   pentominoes/
-#   detect-puzzle-bb-and-kp--2023-08-17
 if __name__ == '__main__':
     args = parse_script_args([
         'run_name',
         'dataset_dir',
-        'base_model',
+        'base_model_size',
     ])
 
-    base_model_path = os.path.join(PROJECT_ROOT, args.base_model)
+    if args.base_model_size not in BASE_MODEL_WEIGHT_FILE_NAMES.keys():
+        raise Exception(f'Invalid base model size: {args.base_model_size}')
+
+    base_model_file = BASE_MODEL_WEIGHT_FILE_NAMES[args.base_model_size]
+    print('Training with:', base_model_file)
+    base_model_path = os.path.join(PROJECT_ROOT, 'weights', base_model_file)
+
     train_args = setup_train_args(
         dataset_dir=args.dataset_dir,
         # TODO: throw an error if results_dirname alreaedy exists???
@@ -71,7 +78,7 @@ if __name__ == '__main__':
 
         other_args=dict(
             epochs=20,
-            # batch_size=16,
+            # batch_size=8,
             # device='mps',
         ),
     )

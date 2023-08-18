@@ -122,10 +122,3 @@ if __name__ == '__main__':
         label_file_content = ' '.join([str(val) for val in label_values])
         with open(label_path, 'w') as f:
             f.write(label_file_content)
-
-        debug_str = ' '.join([str(round(v, 4)) for v in label_values])
-        print(f'-- {image_filename} --', label_file_content)
-
-
-    # print('-----------------------')
-    # print(json.dumps(labels, indent=2))
