@@ -1,0 +1,27 @@
+<View>
+  <RectangleLabels name="bb-1" toName="img-1" opacity="0.2">
+    <Label value="PB" background="#4c130d"/>
+  </RectangleLabels>
+
+  <KeyPointLabels name="kp-1" toName="img-1" strokeWidth="4">
+    <Label value="top-left" background="#e15250"/>
+    <Label value="top-right" background="#59d757"/>
+    <Label value="bot-right" background="#f5df36"/>
+    <Label value="bot-left" background="#4a76d9"/>
+    <!--
+    <Label value="F" background="#f196f1"/>
+    <Label value="I" background="#555"/>
+    <Label value="L" background="#87bce8"/>
+    <Label value="N" background="#f55f4a"/>
+    <Label value="P" background="#e4d6b2"/>
+    <Label value="T" background="#457ddf"/>
+    <Label value="U" background="#efab2c"/>
+    <Label value="V" background="#6b43c8"/>
+    <Label value="W" background="#c3c4c9"/>
+    <Label value="Y" background="#e7ee40"/>
+    <Label value="Z" background="#9fdd92"/>
+    -->
+  </KeyPointLabels>
+
+  <Image name="img-1" value="$img"/>
+</View>
