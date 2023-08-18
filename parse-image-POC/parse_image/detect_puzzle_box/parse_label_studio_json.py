@@ -1,6 +1,7 @@
 import itertools
 import json
 import os
+from pathlib import Path
 
 from settings import AI_DATA_DIR
 from parse_image.utils.misc import parse_script_args
@@ -73,17 +74,13 @@ def convert_ls_keypoint_to_yolo(keypoint):
     )
 
 
-def create_label_file_with_bbox_and_keypoints(image_file, parsed_label_data):
-    print()
-    print(f'-- {image_file} --', end=' ')
-
+def construct_label_values_with_bbox_and_keypoints(parsed_label_data):
     pbb = convert_ls_bbox_to_yolo(parsed_label_data['puzzle_bounding_box'])
     keypoints = {
         name: convert_ls_keypoint_to_yolo(keypoint)
         for name, keypoint in parsed_label_data['keypoints'].items()
     }
-
-    values = [
+    return [
         PUZZLE_BOX_CLASS_ID,
         pbb['x'],
         pbb['y'],
@@ -95,17 +92,15 @@ def create_label_file_with_bbox_and_keypoints(image_file, parsed_label_data):
         )
     ]
 
-    values_str = ' '.join([str(v) for v in values])
-    label_file = os.path.join(dest_label_dir, image_file.replace('.jpg', '.txt'))
-    with open(label_file, 'w') as f:
-        f.write(values_str)
-
 
 if __name__ == '__main__':
     args = parse_script_args([
         'dataset_dir',
     ])
     data_dir = os.path.join(AI_DATA_DIR, args.dataset_dir)
+    # image_dir = os.path.join(data_dir, 'images')
+    # label_src_dir = os.path.join(data_dir, 'labels_original')
+    label_dest_dir = os.path.join(data_dir, 'labels')
 
     label_studio_json_file = os.path.join(
         data_dir,
@@ -114,14 +109,23 @@ if __name__ == '__main__':
     with open(label_studio_json_file, 'r') as f:
         raw_label_studio_data = json.load(f)
 
-    labels = extract_annotations(raw_label_studio_data)
+    labels_per_iamge = extract_annotations(raw_label_studio_data)
 
-    for data in labels:
-        create_label_file_with_bbox_and_keypoints(data['image']['filename'], data)
+    for data in labels_per_iamge:
+        image_filename = data['image']['filename']
+        label_path = os.path.join(
+            label_dest_dir,
+            Path(image_filename).with_suffix('.txt'),
+        )
+
+        label_values = construct_label_values_with_bbox_and_keypoints(data)
+        label_file_content = ' '.join([str(val) for val in label_values])
+        with open(label_path, 'w') as f:
+            f.write(label_file_content)
+
+        debug_str = ' '.join([str(round(v, 4)) for v in label_values])
+        print(f'-- {image_filename} --', label_file_content)
+
 
     # print('-----------------------')
     # print(json.dumps(labels, indent=2))
-
-    # image_dir = os.path.join(data_dir, 'images')
-    # label_dir = os.path.join(data_dir, 'labels')
-
