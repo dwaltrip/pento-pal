@@ -14,7 +14,7 @@ from parse_image.utils.misc import parse_script_args, write_yaml_file
 
 
 BASE_MODEL_WEIGHT_FILE_NAMES = dict(
-    nano='yolov5n-pose.pt',
+    nano='yolov8n-pose.pt',
     small='yolov8s-pose.pt',
     medium='yolov8m-pose.pt',
     large='yolov8l-pose.pt',
@@ -77,7 +77,7 @@ if __name__ == '__main__':
         results_dirname=args.run_name,
 
         other_args=dict(
-            epochs=20,
+            epochs=30,
             # batch_size=8,
             # device='mps',
         ),
