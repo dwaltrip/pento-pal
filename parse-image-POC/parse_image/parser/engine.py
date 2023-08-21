@@ -1,3 +1,5 @@
+from collections import namedtuple
+from dataclasses import dataclass, field
 
 from settings import NUM_CLASSES
 from parse_image.parser.models import (
@@ -9,8 +11,24 @@ from parse_image.parser.models import (
 DETECTION_THRESHOLD = 0.5
 
 
+Point = namedtuple('Point', ['x', 'y'])
+
+@dataclass
+class BoundingBox:
+    class_id: int
+    top_left: Point
+    bot_right: Point
+    width: int = field(init=False)
+    height: int = field(init=False)
+
+    def __post_init__(self):
+        self.width = self.bot_right.x - self.top_left.x
+        self.height = self.bot_right.y - self.top_left.y
+
+    piece_type = property(lambda self: CLASS_NAMES[self.class_id])
+
+
 def get_puzzle_box_corners(image):
-    # TODO: Cache this?
     model = load_corner_prediction_model()
 
     results = model.predict(image)
@@ -70,7 +88,6 @@ def dewarp_rectangle(pil_image, corners, aspect_ratio):
 
 
 def get_piece_bounding_boxes(image):
-    # TODO: Cache this?
     model = load_piece_detection_model()
     results = model.predict(image)
 
@@ -84,7 +101,6 @@ def get_piece_bounding_boxes(image):
     def make_bounding_box(box):
         x1, y1, x2, y2 = box.xyxy[0].tolist()
         class_id = box.cls.item()
-        class_name = result.names[class_id]
         return BoundingBox(
             class_id=class_id,
             top_left=Point(y=y1, x=x1),
