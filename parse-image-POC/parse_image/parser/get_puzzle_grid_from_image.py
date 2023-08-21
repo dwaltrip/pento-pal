@@ -1,14 +1,15 @@
 
+from settings import GRID
 from parse_image.parser.engine import (
     get_puzzle_box_corners,
     dewarp_rectangle,
     get_piece_bounding_boxes,
-    simple_map_boxes_to_grid,
+    # simple_map_boxes_to_grid,
 )
 from parse_image.parser.bounding_boxes_to_grid_boxes import (
     bounding_boxes_to_grid_boxes,
 )
-from parse_image.parseer.piece_grid_boxes_to_puzzle_grid import (
+from parse_image.parser.piece_grid_boxes_to_puzzle_grid import (
     get_puzzle_grid_from_piece_boxes
 )
 
@@ -38,16 +39,24 @@ def get_puzzle_grid_from_image(image):
     # Step 1
     puzzle_corners = get_puzzle_box_corners(image)
 
+    # ------------------------------------------------------------------------
+    # TODO: stupid hack due to the stupid corner ordering issue...
+    pc = puzzle_corners
+    # 3rd and 4th corner, bottom left and bottom right, are in wrong order
+    puzzle_corners = (pc[0], pc[1], pc[3], pc[2]) 
+    # ------------------------------------------------------------------------
+
     # Step 2
     aspect_ratio = GRID.width / GRID.height
     normalized_image = dewarp_rectangle(image, puzzle_corners, aspect_ratio)
+    normalized_image.show()
 
     # Step 3
     piece_bounding_boxes = get_piece_bounding_boxes(normalized_image)
 
     # Step 4 and 5
     # piece_grid_boxes = simple_map_boxes_to_grid(piece_bounding_boxes)
-    piece_grid_boxes = bounding_boxes_to_grid_boxes(bounding_boxes)
+    piece_grid_boxes = bounding_boxes_to_grid_boxes(piece_bounding_boxes)
 
     # Step 6
     puzzle_grid = get_puzzle_grid_from_piece_boxes(piece_grid_boxes)

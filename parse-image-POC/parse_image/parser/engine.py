@@ -1,6 +1,10 @@
 from collections import namedtuple
 from dataclasses import dataclass, field
 
+import cv2
+import numpy as np
+from PIL import Image
+
 from settings import NUM_CLASSES
 from parse_image.parser.models import (
     load_corner_prediction_model,
@@ -34,7 +38,7 @@ class BoundingBox:
 def get_puzzle_box_corners(image):
     model = load_corner_prediction_model()
 
-    results = model.predict(image)
+    results = model.predict(image, verbose=False)
     result = results[0]
     boxes = [
         box for box in result.boxes
@@ -64,8 +68,6 @@ def dewarp_rectangle(pil_image, corners, aspect_ratio):
     image = np.array(pil_image)
     # Detected corners from the image
     src_pts = np.array(corners, dtype=np.float32)
-    # Idealized rectangle points
-    dst_pts = np.array([[0, 0], [width, 0], [width, height], [0, height]], dtype=np.float32)
 
     width_dist = max(
         cv2.norm(src_pts[0] - src_pts[1]),
@@ -83,6 +85,9 @@ def dewarp_rectangle(pil_image, corners, aspect_ratio):
     width = int(width_dist)
     height = int(width / aspect_ratio)
 
+    # Idealized rectangle points
+    dst_pts = np.array([[0, 0], [width, 0], [width, height], [0, height]], dtype=np.float32)
+
     # Find homography and apply to the image
     H, _ = cv2.findHomography(src_pts, dst_pts)
     dewarped_image = cv2.warpPerspective(image, H, (width, height))
@@ -92,7 +97,8 @@ def dewarp_rectangle(pil_image, corners, aspect_ratio):
 
 def get_piece_bounding_boxes(image):
     model = load_piece_detection_model()
-    results = model.predict(image)
+    results = model.predict(image, verbose=False)
+    result = results[0]
 
     boxes = [
         box for box in result.boxes
@@ -103,7 +109,7 @@ def get_piece_bounding_boxes(image):
 
     def make_bounding_box(box):
         x1, y1, x2, y2 = box.xyxy[0].tolist()
-        class_id = box.cls.item()
+        class_id = int(box.cls.item())
         return BoundingBox(
             class_id=class_id,
             top_left=Point(y=y1, x=x1),

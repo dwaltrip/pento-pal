@@ -1,7 +1,8 @@
 from collections import namedtuple
 from dataclasses import dataclass
 
-from settings import GRID
+from settings import CLASS_NAMES, GRID
+from parse_image.boxes_to_grid.pieces import PIECES_BY_NAME
 
 
 Point = namedtuple('Point', ['x', 'y'])

@@ -19,6 +19,7 @@ if __name__ == '__main__':
     image_dir = os.path.join(
         AI_DATA_DIR,
         'detect-grid-hard--2023-08-01',
+        'images',
     )
     image_path = os.path.join(image_dir, 'IMG_2402.png')
     image = Image.open(image_path)
