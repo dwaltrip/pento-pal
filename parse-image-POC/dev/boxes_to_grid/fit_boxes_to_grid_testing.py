@@ -38,7 +38,8 @@ def draw_bbox_points(boxes):
 # ----------------------------------------------------------
 
 def main(training_files):
-    image, boxes = training_files[0]
+    image_path, boxes = training_files[0]
+    image = Image.open(image_path)
     draw = ImageDraw.Draw(image)
 
     for box in boxes:

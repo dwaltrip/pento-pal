@@ -56,7 +56,7 @@ def load_obj_detect_training_files(data_dir):
         label_path = os.path.join(labels_dir, Path(image_file).with_suffix('.txt'))
         image = Image.open(image_path)
         boxes = read_label_file(label_path, image.width, image.height)
-        training_files.append((image, boxes))
+        training_files.append((image_path, boxes))
     return training_files
 
 
