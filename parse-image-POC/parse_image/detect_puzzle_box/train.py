@@ -62,6 +62,7 @@ if __name__ == '__main__':
         'run_name',
         'dataset_dir',
         'base_model_size',
+        'epochs',
     ])
 
     if args.base_model_size not in BASE_MODEL_WEIGHT_FILE_NAMES.keys():
@@ -77,8 +78,8 @@ if __name__ == '__main__':
         results_dirname=args.run_name,
 
         other_args=dict(
-            epochs=30,
-            # batch_size=8,
+            epochs=int(args.epochs),
+            batch=32,
             # device='mps',
         ),
     )

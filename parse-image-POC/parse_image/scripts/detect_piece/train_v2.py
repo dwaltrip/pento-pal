@@ -56,6 +56,7 @@ if __name__ == '__main__':
         'run_name',
         'dataset_dir',
         'base_model',
+        'epochs',
     ])
 
     base_model_path = os.path.join(PROJECT_ROOT, args.base_model)
@@ -65,7 +66,7 @@ if __name__ == '__main__':
         results_dirname=args.run_name,
 
         other_args=dict(
-            epochs=20,
+            epochs=int(args.epochs),
             # batch_size=16,
             # device='mps',
         ),

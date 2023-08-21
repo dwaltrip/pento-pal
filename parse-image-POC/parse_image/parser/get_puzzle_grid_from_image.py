@@ -5,6 +5,12 @@ from parse_image.parser.engine import (
     get_piece_bounding_boxes,
     simple_map_boxes_to_grid,
 )
+from parse_image.parser.bounding_boxes_to_grid_boxes import (
+    bounding_boxes_to_grid_boxes,
+)
+from parse_image.parseer.piece_grid_boxes_to_puzzle_grid import (
+    get_puzzle_grid_from_piece_boxes
+)
 
 
 def get_puzzle_grid_from_image(image):
@@ -40,8 +46,8 @@ def get_puzzle_grid_from_image(image):
     piece_bounding_boxes = get_piece_bounding_boxes(normalized_image)
 
     # Step 4 and 5
-    # piece_grid_boxes = simple_map_boxes_to_grid(normalized_image, piece_bounding_boxes)
-    piece_grid_boxes = simple_map_boxes_to_grid(piece_bounding_boxes)
+    # piece_grid_boxes = simple_map_boxes_to_grid(piece_bounding_boxes)
+    piece_grid_boxes = bounding_boxes_to_grid_boxes(bounding_boxes)
 
     # Step 6
     puzzle_grid = get_puzzle_grid_from_piece_boxes(piece_grid_boxes)

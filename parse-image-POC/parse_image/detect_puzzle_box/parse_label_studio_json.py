@@ -9,6 +9,10 @@ from parse_image.utils.misc import parse_script_args
 
 PUZZLE_BOX_CLASS_ID = 0
 
+# ----------------------------------------------------------------
+# TODO: Fix this ordering!!!!
+# It's supposed to be top-left, top-right, bot-right, bot-left
+# ----------------------------------------------------------------
 KEYPOINT_NAMES = ['top-left', 'top-right', 'bot-left', 'bot-right']
 
 LABEL_STUDIO_JSON_FILENAME = 'label-studio-export-with-keypoints.json'
@@ -93,6 +97,9 @@ def construct_label_values_with_bbox_and_keypoints(parsed_label_data):
     ]
 
 
+# ---------------------------------------------
+# TODO: move most of this into a function!
+# ---------------------------------------------
 if __name__ == '__main__':
     args = parse_script_args([
         'dataset_dir',

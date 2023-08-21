@@ -1,38 +1,11 @@
 from collections import namedtuple
 from parse_image.boxes_to_grid.pieces import PIECES_BY_NAME
 
-import rich
-from rich.console import Console
-from rich.style import Style
-
-from settings import CLASS_MAPS, CLASS_NAMES, GRID
+from utils.print_puzzle_grid import print_puzzle_grid
 from parse_image.boxes_to_grid.map_boxes_to_grid import (
     PieceBox,
     get_puzzle_grid_from_piece_boxes,
 )
-
-
-rich_console = Console()
-palette = rich.color.EIGHT_BIT_PALETTE
-tui_colors_for_piece = dict()
-
-for name, hex_color in CLASS_MAPS.name_to_color.items():
-    if name == 'i':
-        color_triplet = palette[243] # black won't show in terminal
-    else:
-        color_triplet = palette[palette.match(rich.color.parse_rgb_hex(hex_color[1:]))]
-    tui_colors_for_piece[name] = rich.color.Color.from_triplet(color_triplet)
-
-
-def print_puzzle_grid_state(puzzle_grid_state):
-    for row in puzzle_grid_state:
-        for cell in row:
-            if cell:
-                color = tui_colors_for_piece[cell]
-                rich_console.print(cell, style=Style(color=color), end=' ')
-            else:
-                print('_', end=' ')
-        print()
 
 
 if __name__ == '__main__':
@@ -55,4 +28,4 @@ if __name__ == '__main__':
 
     print()
     print('----- puzzle_grid -----')
-    print_puzzle_grid_state(puzzle_grid)
+    print_puzzle_grid(puzzle_grid)
