@@ -5,6 +5,13 @@ from PIL import Image, ImageDraw
 from ultralytics import YOLO
 
 
+KEYPOINT_COLORS = [
+    "#e15250", # "top-left"
+    "#59d757", # "top-right"
+    "#f5df36", # "bot-right"
+    "#4a76d9", # "bot-left"
+]
+
 def predict_image(model, image_path):
     results = model.predict(image_path)
     result = results[0]
@@ -35,7 +42,7 @@ def predict_image(model, image_path):
     keypoints = result.keypoints.squeeze(0).tolist()
     # use different colors to verify the keypoints are in the correct order
     for i, keypoint in enumerate(keypoints):
-        draw_dot(draw, keypoint, 3, 'red')
+        draw_dot(draw, keypoint, 3, KEYPOINT_COLORS[i])
 
     image.show()
 
