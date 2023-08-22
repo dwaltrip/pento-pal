@@ -6,6 +6,11 @@ import numpy as np
 from PIL import Image
 
 from settings import NUM_CLASSES
+from parse_image.parser.errors import (
+    AnalysisError,
+    CornerDetectionError,
+    PieceDetectionError,
+)
 from parse_image.parser.models import (
     load_corner_prediction_model,
     load_piece_detection_model,
@@ -15,7 +20,9 @@ from parse_image.parser.models import (
 # )
 
 
-DETECTION_THRESHOLD = 0.5
+DEBUG = False
+
+DETECTION_THRESHOLD = 0.7
 
 
 Point = namedtuple('Point', ['x', 'y'])
@@ -44,13 +51,19 @@ def get_puzzle_box_corners(image):
         box for box in result.boxes
         if box.conf.item() > DETECTION_THRESHOLD
     ]
-    # TODO: throw a custom error here
-    assert len(boxes) == 1, 'Expected exactly 1 box, got: {}'.format(len(boxes))
+
+    if len(boxes) != 1:
+        raise CornerDetectionError(f'Expected 1 box, got {len(boxes)}.')
 
     box = boxes[0]
     # TODO: we don't actually use puzzle_box... get rid of it?
     puzzle_box = box.xyxy[0].tolist()
     corners_from_keypoints = result.keypoints.squeeze(0).tolist()
+
+    if len(corners_from_keypoints) != 4:
+        raise CornerDetectionError(
+            f'Expected 4 corners, got {len(corners_from_keypoints)}.',
+        )
 
     return corners_from_keypoints
 
@@ -104,8 +117,20 @@ def get_piece_bounding_boxes(image):
         box for box in result.boxes
         if box.conf.item() > DETECTION_THRESHOLD
     ]
-    # TODO: custom error
-    assert len(boxes) == NUM_CLASSES, 'Incorrect numer of pieces detected'
+
+    if DEBUG:
+        return len(result.boxes), len(boxes)
+
+    # TODO: There are fallbacks we can attempt to do here.
+    # E.g. For each piece type, take the one with the highest confidence.
+    # Need to investigate these cases.
+    if len(boxes) != NUM_CLASSES:
+        msg = ' '.join([
+            f'Incorrect numer of pieces detected.',
+            f'Expected {NUM_CLASSES}, got {len(boxes)}.',
+        ])
+        data = dict(count=len(boxes), raw_count=len(result.boxes))
+        raise PieceDetectionError(msg, data=data)
 
     def make_bounding_box(box):
         x1, y1, x2, y2 = box.xyxy[0].tolist()

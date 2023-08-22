@@ -49,7 +49,9 @@ def get_puzzle_grid_from_image(image):
     # Step 2
     aspect_ratio = GRID.width / GRID.height
     normalized_image = dewarp_rectangle(image, puzzle_corners, aspect_ratio)
-    normalized_image.show()
+
+    # TODO: for funzies draw the grid on it.
+    # normalized_image.show()
 
     # Step 3
     piece_bounding_boxes = get_piece_bounding_boxes(normalized_image)
