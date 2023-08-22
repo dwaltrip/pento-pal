@@ -11,11 +11,16 @@ import sys
 
 from ultralytics import YOLO
 
-from settings import AI_DATA_DIR, PROJECT_ROOT, RESULTS_ROOT
+from settings import AI_DATA_DIR, PROJECT_ROOT, RESULTS_ROOT, CLASS_NAMES
 from parse_image.utils.misc import parse_script_args, write_yaml_file
 
 
-CLASS_NAMES = ['F', 'I', 'L', 'N', 'P', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
+BASE_MODEL_WEIGHT_FILE_NAMES = dict(
+    nano='yolov8n.pt',
+    small='yolov8s.pt',
+    medium='yolov8m.pt',
+    large='yolov8l.pt',
+)
 
 
 def build_dataset_paths(dirname):
@@ -55,11 +60,17 @@ if __name__ == '__main__':
     args = parse_script_args([
         'run_name',
         'dataset_dir',
-        'base_model',
+        'base_model_size',
         'epochs',
     ])
 
-    base_model_path = os.path.join(PROJECT_ROOT, args.base_model)
+    if args.base_model_size not in BASE_MODEL_WEIGHT_FILE_NAMES.keys():
+        raise Exception(f'Invalid base model size: {args.base_model_size}')
+
+    base_model_file = BASE_MODEL_WEIGHT_FILE_NAMES[args.base_model_size]
+    print('Training with:', base_model_file)
+    base_model_path = os.path.join(PROJECT_ROOT, 'weights', base_model_file)
+
     train_args = setup_train_args(
         dataset_dir=args.dataset_dir,
         # TODO: throw an error if results_dirname alreaedy exists???
