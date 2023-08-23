@@ -55,10 +55,6 @@ def main(training_files):
 
 if __name__ == '__main__':
     training_files = load_obj_detect_training_files(
-        data_dir=os.path.join(
-            AI_DATA_DIR,
-            'pentominoes',
-            'ls-yolo-export--2023-07-26',
-        )
+        data_dir=os.path.join(AI_DATA_DIR, 'ls-yolo-export--2023-07-26')
     )
     main(training_files)

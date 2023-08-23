@@ -1,11 +1,12 @@
 from collections import namedtuple
-from dataclasses import dataclass, field
 
 import cv2
 import numpy as np
 from PIL import Image
 
 from settings import NUM_CLASSES
+from parse_image.data.bounding_box import PieceBoundingBox
+from parse_image.data.points import Point
 from parse_image.parser.errors import (
     AnalysisError,
     CornerDetectionError,
@@ -23,23 +24,6 @@ from parse_image.parser.models import (
 DEBUG = False
 
 DETECTION_THRESHOLD = 0.7
-
-
-Point = namedtuple('Point', ['x', 'y'])
-
-@dataclass
-class BoundingBox:
-    class_id: int
-    top_left: Point
-    bot_right: Point
-    width: int = field(init=False)
-    height: int = field(init=False)
-
-    def __post_init__(self):
-        self.width = self.bot_right.x - self.top_left.x
-        self.height = self.bot_right.y - self.top_left.y
-
-    piece_type = property(lambda self: CLASS_NAMES[self.class_id])
 
 
 def get_puzzle_box_corners(image):
@@ -132,15 +116,7 @@ def get_piece_bounding_boxes(image):
         data = dict(count=len(boxes), raw_count=len(result.boxes))
         raise PieceDetectionError(msg, data=data)
 
-    def make_bounding_box(box):
-        x1, y1, x2, y2 = box.xyxy[0].tolist()
-        class_id = int(box.cls.item())
-        return BoundingBox(
-            class_id=class_id,
-            top_left=Point(y=y1, x=x1),
-            bot_right=Point(y=y2, x=x2),
-        )
-    return [make_bounding_box(box) for box in boxes]
+    return [PieceBoundingBox.from_prediction(box) for box in boxes]
 
 
 # def simple_map_boxes_to_grid(bounding_boxes):

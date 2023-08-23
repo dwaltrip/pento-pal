@@ -7,36 +7,8 @@ import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
 
 from settings import CLASS_NAMES, CLASS_MAPS
-
-
-# TODO: It's probably non-idiomatic to put the y-coord first...
-Point = namedtuple('Point', ['y', 'x'])
-
-@dataclass
-class BoundingBox:
-    class_id: int
-    top_left: Point
-    bot_right: Point
-    width: int = field(init=False)
-    height: int = field(init=False)
-
-    def __post_init__(self):
-        self.width = self.bot_right.x - self.top_left.x
-        self.height = self.bot_right.y - self.top_left.y
-
-    piece_type = property(lambda self: CLASS_NAMES[self.class_id])
-
-    @classmethod
-    def from_yolo(cls, yolo_box, img_width, img_height):
-        class_id, x_center, y_center, width, height = yolo_box
-        x_center *= img_width
-        y_center *= img_height
-        width *= img_width
-        height *= img_height
-
-        top_left = Point(y=y_center - height / 2, x=x_center - width / 2)
-        bot_right = Point(y=top_left.y + height, x=top_left.x + width)
-        return BoundingBox(class_id=int(class_id), top_left=top_left, bot_right=bot_right)
+from parse_image.data.bounding_box import PieceBoundingBox
+from parse_image.data.points import Point
 
 
 def load_obj_detect_training_files(data_dir):
@@ -62,12 +34,8 @@ def load_obj_detect_training_files(data_dir):
 
 def read_label_file(file_path, img_width, img_height):
     with open(file_path, 'r') as file:
-        lines = file.readlines()
-    boxes = []
-    for line in lines:
-        boxes.append(BoundingBox.from_yolo(
-            [float(val) for val in line.strip().split()],
-            img_width,
-            img_height,
-        ))
-    return boxes
+        lines = file.read().strip().split('\n')
+    return [
+        PieceBoundingBox.from_yolo_label(line, img_width, img_height)
+        for line in lines
+    ]
