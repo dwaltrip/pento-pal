@@ -16,9 +16,6 @@ from parse_image.parser.models import (
     load_corner_prediction_model,
     load_piece_detection_model,
 )
-# from parse_image.parser.bounding_boxes_to_grid_boxes import (
-#     bounding_boxes_to_grid_boxes
-# )
 
 
 DEBUG = False
@@ -117,14 +114,3 @@ def get_piece_bounding_boxes(image):
         raise PieceDetectionError(msg, data=data)
 
     return [PieceBoundingBox.from_prediction(box) for box in boxes]
-
-
-# def simple_map_boxes_to_grid(bounding_boxes):
-#     return sorted(
-#         bounding_boxes_to_grid_boxes(bounding_boxes),
-#         key=lambda gb: (gb.top_left.y, gb.top_left.x),
-    # )
-
-
-# def get_puzzle_grid_from_piece_grid_boxes(piece_grid_boxes):
-#     get_puzzle_grid_from_piece_boxes    

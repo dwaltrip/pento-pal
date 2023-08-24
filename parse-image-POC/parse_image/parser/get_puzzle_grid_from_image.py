@@ -4,7 +4,6 @@ from parse_image.parser.engine import (
     get_puzzle_box_corners,
     dewarp_rectangle,
     get_piece_bounding_boxes,
-    # simple_map_boxes_to_grid,
 )
 from parse_image.parser.bounding_boxes_to_grid_boxes import (
     bounding_boxes_to_grid_boxes,
@@ -57,7 +56,6 @@ def get_puzzle_grid_from_image(image):
     piece_bounding_boxes = get_piece_bounding_boxes(normalized_image)
 
     # Step 4 and 5
-    # piece_grid_boxes = simple_map_boxes_to_grid(piece_bounding_boxes)
     piece_grid_boxes = bounding_boxes_to_grid_boxes(piece_bounding_boxes)
 
     # Step 6

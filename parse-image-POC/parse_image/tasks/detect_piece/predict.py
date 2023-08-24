@@ -33,7 +33,7 @@ def predict_image(model, image_path):
     draw = ImageDraw.Draw(image)
 
     for i, box in enumerate(sorted(result.boxes, key=ltr_key)):
-        class_name = result.names[box.cls.item()]
+        class_name = result.names[box.cls.item()].upper()
         conf = box.conf.item()
 
         if conf < 0.7:
