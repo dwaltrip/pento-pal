@@ -1,19 +1,21 @@
 
 from settings import GRID
-from parse_image.parser.engine import (
-    get_puzzle_box_corners,
-    dewarp_rectangle,
-    get_piece_bounding_boxes,
-)
+
+from parse_image.parser.get_puzzle_box_corners import get_puzzle_box_corners
+from parse_image.parser.get_piece_bounding_boxes import get_piece_bounding_boxes
+from parse_image.parser.straighten_rect import straighten_rect
 from parse_image.parser.bounding_boxes_to_grid_boxes import (
     bounding_boxes_to_grid_boxes,
 )
-from parse_image.parser.piece_grid_boxes_to_puzzle_grid import (
+from parse_image.parser.get_puzzle_grid_from_piece_boxes import (
     get_puzzle_grid_from_piece_boxes
 )
 
 
-def get_puzzle_grid_from_image(image):
+# TODO: better spot for this?
+DETECTION_THRESHOLD = 0.7
+
+def parse_puzzle_solution(image):
     """
     End-to-end solution for extracting the puzzle grid from an image:
 
@@ -29,14 +31,17 @@ def get_puzzle_grid_from_image(image):
             I think that should work 99% of the time.
         6. Sort the pieces by their top left grid cell, and run the algo that simply tries
             each orientation for each piece, starting from top-left and working down to
-            bottom-right. This is already implemented in `get_puzzle_grid_from_piece_boxes`. 
+            bottom-right.
         
     And voila, now we have the solution in the image represented as 2d-array of class names (pieces)!
         We did it :)
     """
 
     # Step 1
-    puzzle_corners = get_puzzle_box_corners(image)
+    puzzle_corners = get_puzzle_box_corners(
+        image,
+        conf_threshold=DETECTION_THRESHOLD,
+    )
 
     # ------------------------------------------------------------------------
     # TODO: stupid hack due to the stupid corner ordering issue...
@@ -47,13 +52,16 @@ def get_puzzle_grid_from_image(image):
 
     # Step 2
     aspect_ratio = GRID.width / GRID.height
-    normalized_image = dewarp_rectangle(image, puzzle_corners, aspect_ratio)
+    normalized_image = straighten_rect(image, puzzle_corners, aspect_ratio)
 
     # TODO: for funzies draw the grid on it.
     # normalized_image.show()
 
     # Step 3
-    piece_bounding_boxes = get_piece_bounding_boxes(normalized_image)
+    piece_bounding_boxes = get_piece_bounding_boxes(
+        normalized_image,
+        conf_threshold=DETECTION_THRESHOLD,
+    )
 
     # Step 4 and 5
     piece_grid_boxes = bounding_boxes_to_grid_boxes(piece_bounding_boxes)

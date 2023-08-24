@@ -9,10 +9,10 @@ from rich.style import Style
 
 from settings import AI_DATA_DIR
 from utils.print_puzzle_grid import print_puzzle_grid
-from parse_image.parser.get_puzzle_grid_from_image import (
-    get_puzzle_grid_from_image
+from parse_image.parser.parse_puzzle_solution import (
+    parse_puzzle_solution
 )
-from parse_image.parser.engine import get_piece_bounding_boxes
+from parse_image.parser.get_piece_bounding_boxes import get_piece_bounding_boxes
 from parse_image.parser.errors import PieceDetectionError
 
 
@@ -75,7 +75,7 @@ def main():
 
         grid_from_label = read_label_file(label_path)
         try:
-            predicted_puzzle_grid = get_puzzle_grid_from_image(image)
+            predicted_puzzle_grid = parse_puzzle_solution(image)
         except PieceDetectionError as err:
             counts_str = f"({err.data['count']}, {err.data['raw_count']})"
             console.print(f'error', style=Style(color='red'), end=' ')

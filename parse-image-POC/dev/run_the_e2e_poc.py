@@ -5,8 +5,8 @@ from PIL import Image
 
 from settings import AI_DATA_DIR
 from utils.print_puzzle_grid import print_puzzle_grid
-from parse_image.parser.get_puzzle_grid_from_image import (
-    get_puzzle_grid_from_image
+from parse_image.parser.parse_puzzle_solution import (
+    parse_puzzle_solution
 )
 
 
@@ -24,5 +24,5 @@ if __name__ == '__main__':
     image_path = os.path.join(image_dir, 'IMG_2402.png')
     image = Image.open(image_path)
 
-    puzzle_grid = get_puzzle_grid_from_image(image)
+    puzzle_grid = parse_puzzle_solution(image)
     print_puzzle_grid(puzzle_grid)
