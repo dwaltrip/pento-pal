@@ -6,6 +6,14 @@ import shutil
 
 from PIL import Image
 
+from parse_image.validation.piece_detection import validate_label_files
+
+
+class TrainingDataValidationError(Exception):
+    def __init__(self, message, invalid_label_files):
+        super().__init__(message)
+        self.invalid_label_files = invalid_label_files
+
 
 def split_training_data(data_dir, percents):
     assert sum(percents.values()) == 1, 'percents should sum to 100%'
@@ -20,15 +28,31 @@ def split_training_data(data_dir, percents):
     val_dir = path.join(data_dir, 'val')
     test_dir = path.join(data_dir, 'test')
 
-    for folder in [train_dir, val_dir, test_dir]:
-        os.makedirs(path.join(folder, 'images'), exist_ok=True)
-        os.makedirs(path.join(folder, 'labels'), exist_ok=True)
-
     image_files = [
         file
         for file in os.listdir(src_images_dir)
         if Path(file).suffix == '.png'
     ]
+    label_files = [
+        Path(image_file).with_suffix('.txt')
+        for image_file in image_files
+    ]
+
+    invalid_files = validate_label_files(zip(
+        [path.join(src_labels_dir, f) for f in label_files],
+        [path.join(src_images_dir, f) for f in image_files],
+    ))
+    if len(invalid_files) > 0:
+        raise TrainingDataValidationError(
+            f'Invalid label files found in {data_dir}',
+            invalid_label_files=invalid_files,
+        )
+    else:
+        print('No invalid files found! Proceeding with split.')
+        
+    for folder in [train_dir, val_dir, test_dir]:
+        os.makedirs(path.join(folder, 'images'), exist_ok=True)
+        os.makedirs(path.join(folder, 'labels'), exist_ok=True)
 
     def copy_dataset_item(image_filename, dest_dir):
         label_filename = Path(image_filename).with_suffix('.txt')
