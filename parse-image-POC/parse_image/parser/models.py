@@ -4,11 +4,19 @@ import os
 from ultralytics import YOLO
 
 from settings import PROJECT_ROOT, RESULTS_ROOT
+from parse_image.parser.logging import logger
 
 
 CORNER_PRED_TRAINING_RUN = 'detect-puzzle-box--2023-08-19--ts257--small'
 PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-21--small'
 
+
+logger.log(
+    '[Models]',
+    f'- corner detection : {CORNER_PRED_TRAINING_RUN}',
+    f'- piece detection  : {PIECE_DETECT_TRAINING_RUN}',
+    sep='\n\t',
+)
 
 def get_weights_path(training_run_name):
     return os.path.join(
@@ -18,7 +26,6 @@ def get_weights_path(training_run_name):
         'weights',
         'best.pt',
     )
-
 
 @cache
 def load_corner_prediction_model():

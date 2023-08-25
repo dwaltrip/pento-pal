@@ -2,9 +2,11 @@ from settings import NUM_CLASSES
 from parse_image.data.bounding_box import PieceBoundingBox
 from parse_image.parser.errors import PieceDetectionError
 from parse_image.parser.models import load_piece_detection_model
+from parse_image.parser.logging import logger
 
 
 DEBUG = False
+VERBOSE = True
 
 def get_piece_bounding_boxes(image, conf_threshold=None):
     model = load_piece_detection_model()
@@ -18,10 +20,11 @@ def get_piece_bounding_boxes(image, conf_threshold=None):
             if box.conf.item() > conf_threshold
         ]
         num_dropped = len(result.boxes) - len(boxes)
-        print(
-            f'Filtering by box.conf < {conf_threshold}.', 
-            f'Filtered {num_droppedboxes} boxes.'
-        )
+        if VERBOSE and num_dropped > 0:
+            logger.log(
+                f'Filtering by conf... {num_dropped} boxes were dropped',
+                f'(box.conf < {conf_threshold})',
+            )
 
     # Take the boxes with the highest confidence for each piece type.
     boxes_in_conf_order = sorted(boxes, key=lambda box: box.conf.item(), reverse=True)
