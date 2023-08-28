@@ -7,8 +7,13 @@ from settings import PROJECT_ROOT, RESULTS_ROOT
 from parse_image.parser.logging import logger
 
 
+# TODO: make these more configurable
 CORNER_PRED_TRAINING_RUN = 'detect-puzzle-box--2023-08-19--ts257--small'
-PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-21--small'
+# PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-21--small'
+# PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-23--ds100-small'
+# PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-23--ds100-small-e60'
+PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-24--ds104-small-e90'
+# PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-23--ds100-med-e50'
 
 
 logger.log(
