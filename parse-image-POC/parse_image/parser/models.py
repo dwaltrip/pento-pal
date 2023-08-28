@@ -32,11 +32,16 @@ def get_weights_path(training_run_name):
         'best.pt',
     )
 
+
+def load_model(model_name):
+    return YOLO(get_weights_path(model_name))
+
+
 @cache
 def load_corner_prediction_model():
-    return YOLO(get_weights_path(CORNER_PRED_TRAINING_RUN))
+    return load_model(CORNER_PRED_TRAINING_RUN)
 
 
 @cache
 def load_piece_detection_model():
-    return YOLO(get_weights_path(PIECE_DETECT_TRAINING_RUN))
+    return load_model(PIECE_DETECT_TRAINING_RUN)

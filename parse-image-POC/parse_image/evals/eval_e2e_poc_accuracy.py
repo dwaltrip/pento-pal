@@ -9,18 +9,13 @@ from rich.style import Style
 
 from settings import AI_DATA_DIR
 from utils.print_puzzle_grid import print_puzzle_grid
+from utils.read_label_file import read_puzzle_grid_label
+
 from parse_image.parser.parse_puzzle_solution import (
     parse_puzzle_solution
 )
 from parse_image.parser.get_piece_bounding_boxes import get_piece_bounding_boxes
 from parse_image.parser.errors import PieceDetectionError
-
-
-def read_label_file(label_path):
-    with open(label_path) as f:
-        lines = f.read().strip().split('\n')
-    label_rows = [line.strip().split(' ') for line in lines]
-    return label_rows
 
 
 def do_puzzle_grids_match(grid1, grid2):
@@ -42,7 +37,7 @@ def main():
     labels_dir = os.path.join(
         AI_DATA_DIR,
         'detect-grid-hard--2023-08-01',
-        'labels_COMBINED',
+        'labels',
     )
 
     label_files = [f for f in os.listdir(labels_dir) if f.endswith('.txt')]
@@ -74,7 +69,7 @@ def main():
         def print_result_label():
             print(f'[{i:3}] {image_filename}:', end=' ')
 
-        grid_from_label = read_label_file(label_path)
+        grid_from_label = read_puzzle_grid_label(label_path)
         try:
             predicted_puzzle_grid = parse_puzzle_solution(image)
         except PieceDetectionError as err:
