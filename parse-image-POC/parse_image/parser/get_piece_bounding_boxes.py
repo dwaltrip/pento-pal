@@ -2,7 +2,7 @@ from settings import NUM_CLASSES
 from parse_image.data.bounding_box import PieceBoundingBox
 from parse_image.parser.errors import PieceDetectionError
 from parse_image.parser.models import load_piece_detection_model
-from parse_image.parser.logging import logger
+from parse_image.parser.logger import logger
 
 
 DEBUG = False
@@ -36,7 +36,8 @@ def get_piece_bounding_boxes(image, conf_threshold=None):
             seen.add(box.cls.item())
     
     if len(boxes_in_conf_order) != len(boxes):
-        print(f'\tNOTE: {len(boxes_in_conf_order) - len(boxes)} bounding boxes were discarded.')
+        num_dupes = len(boxes_in_conf_order) - len(boxes)
+        print(f'\tNOTE: {num_dupes} dupe bounding boxes were dropped.')
 
     if DEBUG:
         return len(result.boxes), len(boxes)

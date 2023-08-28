@@ -4,7 +4,7 @@ import os
 from ultralytics import YOLO
 
 from settings import PROJECT_ROOT, RESULTS_ROOT
-from parse_image.parser.logging import logger
+from parse_image.parser.logger import logger
 
 
 # TODO: make these more configurable

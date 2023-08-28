@@ -71,12 +71,14 @@ def main():
             percent = i / len(label_files) * 100
             print(f'--- {percent:.0f}% complete ---')
 
-        print(f'[{i:3}] {image_filename}:', end=' ')
+        def print_result_label():
+            print(f'[{i:3}] {image_filename}:', end=' ')
 
         grid_from_label = read_label_file(label_path)
         try:
             predicted_puzzle_grid = parse_puzzle_solution(image)
         except PieceDetectionError as err:
+            print_result_label()
             counts_str = f"({err.data['count']}, {err.data['raw_count']})"
             console.print(f'error', style=Style(color='red'), end=' ')
             console.print(counts_str, style=Style(color='#888888'))
@@ -84,14 +86,17 @@ def main():
             continue
 
         if not predicted_puzzle_grid:
-            console.print('prediciton is None', style=Style(color='red'))
+            print_result_label()
+            console.print('prediction is None', style=Style(color='red'))
             outcome_counts['prediction is None'] += 1
             continue
 
         if do_puzzle_grids_match(grid_from_label, predicted_puzzle_grid):
+            print_result_label()
             outcome_counts['success'] += 1
             console.print('success', style=Style(color='green'))
         else:
+            print_result_label()
             outcome_counts['failure'] += 1
             console.print('failed', style=Style(color='#888888'))
             # image.show()
