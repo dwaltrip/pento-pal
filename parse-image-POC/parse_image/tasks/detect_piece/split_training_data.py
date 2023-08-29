@@ -6,8 +6,6 @@ import shutil
 
 from PIL import Image
 
-from parse_image.validation.piece_detection import validate_label_files
-
 
 class TrainingDataValidationError(Exception):
     def __init__(self, message, invalid_label_files):
@@ -15,7 +13,7 @@ class TrainingDataValidationError(Exception):
         self.invalid_label_files = invalid_label_files
 
 
-def split_training_data(data_dir, percents):
+def split_training_data(data_dir, percents, label_validator=None):
     assert sum(percents.values()) == 1, 'percents should sum to 100%'
 
     if not path.exists(data_dir):
@@ -38,17 +36,20 @@ def split_training_data(data_dir, percents):
         for image_file in image_files
     ]
 
-    invalid_files = validate_label_files(zip(
-        [path.join(src_labels_dir, f) for f in label_files],
-        [path.join(src_images_dir, f) for f in image_files],
-    ))
-    if len(invalid_files) > 0:
-        raise TrainingDataValidationError(
-            f'Invalid label files found in {data_dir}',
-            invalid_label_files=invalid_files,
-        )
+    if label_validator:
+        invalid_files = label_validator(zip(
+            [path.join(src_labels_dir, f) for f in label_files],
+            [path.join(src_images_dir, f) for f in image_files],
+        ))
+        if len(invalid_files) > 0:
+            raise TrainingDataValidationError(
+                f'Invalid label files found in {data_dir}',
+                invalid_label_files=invalid_files,
+            )
+        else:
+            print('No invalid files found! Proceeding with split.')
     else:
-        print('No invalid files found! Proceeding with split.')
+        print('No `label_validator` provided. Proceeding with split.')
         
     for folder in [train_dir, val_dir, test_dir]:
         os.makedirs(path.join(folder, 'images'), exist_ok=True)

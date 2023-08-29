@@ -10,7 +10,7 @@ from tasks.detect_piece.split_training_data import (
     split_training_data,
     TrainingDataValidationError,
 )
-
+from parse_image.validation.piece_detection import validate_label_files
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -39,6 +39,7 @@ if __name__ == '__main__':
         split_training_data(
             data_dir=data_dir,
             percents=dict(train=0.8, val=0.2, test=0.0),
+            label_validator=validate_label_files,
         )
     except TrainingDataValidationError as err:
         for i, (label_path, err_msg) in enumerate(err.invalid_label_files):
