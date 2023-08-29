@@ -8,21 +8,12 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from settings import AI_DATA_DIR, GRID
+from parse_image.detect_puzzle_box.labels import read_label_file, KEYPOINT_COLORS
 
-
-Point = namedtuple('Point', ['x', 'y'])
-
-@dataclass
-class BoundingBox:
-    top_left: Point
-    bot_right: Point
-    width: int = field(init=False)
-    height: int = field(init=False)
-
-    def __post_init__(self):
-        self.width = self.bot_right.x - self.top_left.x
-        self.height = self.bot_right.y - self.top_left.y
-
+# -----------------------------------------
+# TODO: this doesn't work anymore..........
+# test before recent changes
+# -----------------------------------------
 
 def dewarp_rectangle(pil_image, corners, aspect_ratio):
     """
@@ -58,62 +49,6 @@ def dewarp_rectangle(pil_image, corners, aspect_ratio):
 # ----------------------
 
 
-def read_label_file(label_path, img_height, img_width):
-    with open(label_path, 'r') as file:
-        lines = file.read().strip().split('\n')
-
-    assert len(lines) == 1, f'Expected 1 line in label file, got {len(lines)}'
-    line = lines[0]
-
-    label_values = [float(val) for val in line.strip().split()]
-    assert len(label_values) == 13, f'Expected 13 values in label file, got {len(label_values)}'
-    (
-        # puzzle box
-        class_id, pb_x_center, pb_y_center, pb_width, pb_height,
-        # 4 corners
-        # tl_x, tl_y, tr_x, tr_y, br_x, br_y, bl_x, bl_y,
-        # --------------------------------------------------------------------
-        # NOTE: I accidentally flipped br and bl in the label files
-        #   It's now fixed currently in parse_label_studio_json.py,
-        #   so future datasets will have the correct ordering (clockwise).
-        #   We will have to change this back for those.
-        # -------------------------------------------------------------------
-        tl_x, tl_y, tr_x, tr_y, bl_x, bl_y, br_x, br_y
-    ) = label_values
-
-    def point_from_yolo_coords(x, y):
-        return Point(x=x*img_width, y=y*img_height)
-
-    keypoints = [
-        point_from_yolo_coords(x=tl_x, y=tl_y),
-        point_from_yolo_coords(x=tr_x, y=tr_y),
-        point_from_yolo_coords(x=br_x, y=br_y),
-        point_from_yolo_coords(x=bl_x, y=bl_y),
-    ]
-
-    pb_top_left = point_from_yolo_coords(
-        x=pb_x_center - pb_width / 2,
-        y=pb_y_center - pb_height / 2,
-    )
-    pb_bot_right = point_from_yolo_coords(
-        x=pb_x_center + pb_width / 2,
-        y=pb_y_center + pb_height / 2,
-    )
-    pb_bb = BoundingBox(top_left=pb_top_left, bot_right=pb_bot_right)
-
-    return pb_bb, keypoints
-
-
-# ----------------------------------------------------------------
-
-KEYPOINT_COLORS = [
-    "#e15250", # "top-left"
-    "#59d757", # "top-right"
-    "#f5df36", # "bot-right"
-    "#4a76d9", # "bot-left"
-]
-
-
 def display_dewarped_puzzle_using_keypoint_labels(data_dirname, image_filename):
     label_filename = Path(image_filename).with_suffix('.txt')
 
@@ -134,7 +69,11 @@ def display_dewarped_puzzle_using_keypoint_labels(data_dirname, image_filename):
         )
     
     aspect_ratio = GRID.width / GRID.height
-    dewarped_image = dewarp_rectangle(image, corner_keypoints, aspect_ratio)
+    dewarped_image = dewarp_rectangle(
+        image,
+        [(p.x, p.y) for p in corner_keypoints],
+        aspect_ratio,
+    )
 
     image.show()
     dewarped_image.show()
