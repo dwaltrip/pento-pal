@@ -4,6 +4,8 @@ import sys
 from PIL import Image, ImageDraw
 from ultralytics import YOLO
 
+from parse_image.detect_puzzle_box.viz import draw_corners
+
 
 KEYPOINT_COLORS = [
     "#e15250", # "top-left"
@@ -13,7 +15,7 @@ KEYPOINT_COLORS = [
 ]
 
 def predict_image(model, image_path):
-    results = model.predict(image_path)
+    results = model.predict(image_path, verbose=False)
     result = results[0]
     print('num objects:', len(result.boxes))
 
@@ -40,17 +42,9 @@ def predict_image(model, image_path):
         )
 
     keypoints = result.keypoints.squeeze(0).tolist()
-    # use different colors to verify the keypoints are in the correct order
-    for i, keypoint in enumerate(keypoints):
-        draw_dot(draw, keypoint, 3, KEYPOINT_COLORS[i])
+    draw_corners(draw, keypoints)
 
     image.show()
-
-def draw_dot(draw, point, size, fill):
-    x, y = point
-    top_left = (x - size, y - size)
-    bot_right = (x + size, y + size)
-    draw.ellipse((top_left, bot_right), fill=fill)
 
 
 def predict_puzzle_box_and_keypoints(model, image_paths):
