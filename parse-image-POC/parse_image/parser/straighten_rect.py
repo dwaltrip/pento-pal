@@ -3,7 +3,7 @@ import numpy as np
 from PIL import Image
 
 
-def straighten_rect(pil_image, corners, aspect_ratio):
+def straighten_rect(pil_image, corners, aspect_ratio, padding=50):
     """
     De-warps a rectangular region in the given image.
     Params:
@@ -21,23 +21,23 @@ def straighten_rect(pil_image, corners, aspect_ratio):
         cv2.norm(src_pts[0] - src_pts[1]),
         cv2.norm(src_pts[2] - src_pts[3]),
     )
-    height_dist = max(
-        cv2.norm(src_pts[0] - src_pts[3]),
-        cv2.norm(src_pts[1] - src_pts[2]),
-    )
-
-    # ----------------------------------------------------------------------
-    # TODO: we aren't using the height_dist at all... not sure about that...
-    # Need to ask GPT-4 to explain this code
-    # ----------------------------------------------------------------------
+    # Calculating width and height based on original aspect ratio
     width = int(width_dist)
     height = int(width / aspect_ratio)
 
-    # Idealized rectangle points
-    dst_pts = np.array([[0, 0], [width, 0], [width, height], [0, height]], dtype=np.float32)
+    pad = padding
+    padded_dims = (width + 2 * pad, height + 2 * pad)
+
+    # Idealized rectangle points with padding
+    dst_pts = np.array([
+        [pad, pad],
+        [pad + width, pad],
+        [pad + width, pad + height],
+        [pad, pad + height]
+    ], dtype=np.float32)
 
     # Find homography and apply to the image
     H, _ = cv2.findHomography(src_pts, dst_pts)
-    dewarped_image = cv2.warpPerspective(image, H, (width, height))
+    dewarped_image = cv2.warpPerspective(image, H, padded_dims)
 
     return Image.fromarray(dewarped_image)
