@@ -1,26 +1,36 @@
+from collections import namedtuple
+
 from parse_image.parser.errors import CornerDetectionError
 from parse_image.parser.models import load_corner_prediction_model
+from parse_image.parser.logger import logger
+
+
+CornerPred = namedtuple('CornerPred', ['box', 'conf', 'keypoints'])
+
+def make_corner_pred(box_pred):
+    box = box_pred.boxes[0]
+    return CornerPred(box, box.conf.item(), box_pred.keypoints)
 
 
 def get_puzzle_box_corners(image, conf_threshold=None):
     model = load_corner_prediction_model()
-
     results = model.predict(image, verbose=False)
     result = results[0]
-    boxes = result.boxes
+
+    preds = [make_corner_pred(box_pred) for box_pred in result]
+
     if conf_threshold:
-        boxes = [
-            box for box in boxes
-            if box.conf.item() > conf_threshold
-        ]
+        preds = [pred for pred in preds if pred.conf >= conf_threshold]
+    
+    if len(preds) != 1:
+        logger.log(
+            f'Corner detection found multiple boxes: ({len(preds)}).',
+            'Using box w/ highest confidence.',
+        )
 
-    if len(boxes) != 1:
-        raise CornerDetectionError(f'Expected 1 box, got {len(boxes)}.')
-
-    box = boxes[0]
-    # TODO: we don't actually use puzzle_box... get rid of it?
-    puzzle_box = box.xyxy[0].tolist()
-    corners_from_keypoints = result.keypoints.squeeze(0).tolist()
+    # Take the prediction with the highest confidence
+    best_pred = sorted(preds, key=lambda x: x.conf, reverse=True)[0]
+    corners_from_keypoints = best_pred.keypoints.tolist()
 
     if len(corners_from_keypoints) != 4:
         raise CornerDetectionError(

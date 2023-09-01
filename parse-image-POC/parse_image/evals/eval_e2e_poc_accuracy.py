@@ -15,7 +15,10 @@ from parse_image.parser.parse_puzzle_solution import (
     parse_puzzle_solution
 )
 from parse_image.parser.get_piece_bounding_boxes import get_piece_bounding_boxes
-from parse_image.parser.errors import PieceDetectionError
+from parse_image.parser.errors import (
+    CornerDetectionError,
+    PieceDetectionError,
+)
 
 
 def do_puzzle_grids_match(grid1, grid2):
@@ -75,9 +78,14 @@ def main():
         except PieceDetectionError as err:
             print_result_label()
             counts_str = f"({err.data['count']}, {err.data['raw_count']})"
-            console.print(f'error', style=Style(color='red'), end=' ')
+            console.print(f'error (piece detection)', style=Style(color='red'), end=' ')
             console.print(counts_str, style=Style(color='#888888'))
             outcome_counts['piece detection error'] += 1
+            continue
+        except CornerDetectionError as err:
+            print_result_label()
+            console.print(f'error (corner detection)', style=Style(color='red'))
+            outcome_counts['corner detection error'] += 1
             continue
 
         if not predicted_puzzle_grid:
