@@ -8,12 +8,19 @@ from parse_image.parser.logger import logger
 
 
 # TODO: make these more configurable
-CORNER_PRED_TRAINING_RUN = 'detect-puzzle-box--2023-08-19--ts257--small'
+# CORNER_PRED_TRAINING_RUN = 'detect-puzzle-box--2023-08-19--ts257--small'
+# CORNER_PRED_TRAINING_RUN = 'detect-puzzle-box--08-29--ds305-small-e50--take2'
+CORNER_PRED_TRAINING_RUN = 'detect-puzzle-box--08-30--ds367-small-e80'
+
 # PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-21--small'
 # PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-23--ds100-small'
 # PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-23--ds100-small-e60'
-PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-24--ds104-small-e90'
+# PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-24--ds104-small-e90'
 # PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-23--ds100-med-e50'
+# PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-30--ds122-small-60'
+
+# PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-24--ds104-small-e90'
+PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-31--ds147-small-120'
 
 
 logger.log(

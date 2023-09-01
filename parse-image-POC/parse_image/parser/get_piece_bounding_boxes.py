@@ -5,7 +5,6 @@ from parse_image.parser.models import load_piece_detection_model
 from parse_image.parser.logger import logger
 
 
-DEBUG = False
 VERBOSE = True
 
 def get_piece_bounding_boxes(image, conf_threshold=None):
@@ -39,12 +38,6 @@ def get_piece_bounding_boxes(image, conf_threshold=None):
         num_dupes = len(boxes_in_conf_order) - len(boxes)
         print(f'\tNOTE: {num_dupes} dupe bounding boxes were dropped.')
 
-    if DEBUG:
-        return len(result.boxes), len(boxes)
-
-    # TODO: There are fallbacks we can attempt to do here.
-    # E.g. For each piece type, take the one with the highest confidence.
-    # Need to investigate these cases.
     if len(boxes) != NUM_CLASSES:
         msg = ' '.join([
             f'Incorrect numer of pieces detected.',

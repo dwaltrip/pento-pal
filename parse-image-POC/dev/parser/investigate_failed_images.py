@@ -17,8 +17,8 @@ from parse_image.parser.logger import rich_print
 
 CLASS_NAMES = [name.upper() for name in CLASS_NAMES]
 
-DETECTION_THRESHOLD = None
-# DETECTION_THRESHOLD = 0.7
+# DETECTION_THRESHOLD = None
+DETECTION_THRESHOLD = 0.5
 
 
 def ltr_key(box):
@@ -102,7 +102,8 @@ FAILED_IMAGES = [
     'IMG_2753.png',
 ]
 
-PIECE_DETECT_MODEL_NAME = 'detect-pieces--08-24--ds104-small-e90'
+# PIECE_DETECT_MODEL_NAME = 'detect-pieces--08-24--ds104-small-e90'
+PIECE_DETECT_MODEL_NAME = 'detect-pieces--08-31--ds147-small-120'
 
 if __name__ == '__main__':
     rich_print('Piece Detection Model:', PIECE_DETECT_MODEL_NAME)

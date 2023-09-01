@@ -21,7 +21,10 @@ if __name__ == '__main__':
         'detect-grid-hard--2023-08-01',
         'images',
     )
-    image_path = os.path.join(image_dir, 'IMG_2402.png')
+    # image_path = os.path.join(image_dir, 'IMG_2402.png')
+    # image_path = os.path.join(image_dir, 'IMG_3021.png')
+    image_path = os.path.join(image_dir, 'IMG_2348.png')
+
     image = Image.open(image_path)
 
     puzzle_grid = parse_puzzle_solution(image)

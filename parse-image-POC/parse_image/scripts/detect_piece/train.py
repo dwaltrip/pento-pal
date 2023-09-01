@@ -78,7 +78,7 @@ if __name__ == '__main__':
 
         other_args=dict(
             epochs=int(args.epochs),
-            # batch_size=16,
+            # batch=16,
             # device='mps',
         ),
     )
