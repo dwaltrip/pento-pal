@@ -22,4 +22,5 @@ if __name__ == '__main__':
     weights_path = sys.argv[1]
 
     model = YOLO(weights_path)
-    predict_piece_detection(model, test_images)
+    predict_piece_detection(model, test_images, conf_threshold=None)
+    # predict_piece_detection(model, test_images, conf_threshold=0.5)
