@@ -1,4 +1,4 @@
-from settings import CLASS_NAMES, GRID
+from pento_parser_poc.settings import CLASS_NAMES, GRID
 
 
 class TreeNode:

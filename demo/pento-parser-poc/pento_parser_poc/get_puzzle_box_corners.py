@@ -1,8 +1,8 @@
 from collections import namedtuple
 
-from parse_image.parser.errors import CornerDetectionError
-from parse_image.parser.models import load_corner_prediction_model
-from parse_image.parser.logger import logger
+from pento_parser_poc.errors import CornerDetectionError
+from pento_parser_poc.models import load_corner_prediction_model
+from pento_parser_poc.logger import logger
 
 
 CornerPred = namedtuple('CornerPred', ['box', 'conf', 'keypoints'])
