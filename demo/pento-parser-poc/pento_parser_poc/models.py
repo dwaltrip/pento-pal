@@ -3,8 +3,8 @@ import os
 
 from ultralytics import YOLO
 
-from settings import PROJECT_ROOT, RESULTS_ROOT
-from parse_image.parser.logger import logger
+from pento_parser_poc.settings import PROJECT_ROOT, RESULTS_ROOT
+from pento_parser_poc.logger import logger
 
 
 # TODO: make these more configurable

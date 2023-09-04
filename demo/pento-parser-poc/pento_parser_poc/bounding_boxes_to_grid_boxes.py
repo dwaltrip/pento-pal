@@ -1,8 +1,8 @@
 from collections import namedtuple
 from dataclasses import dataclass
 
-from settings import CLASS_NAMES, GRID
-from parse_image.boxes_to_grid.pieces import PIECES_BY_NAME
+from pento_parser_poc.settings import CLASS_NAMES, GRID
+from pento_parser_poc.pieces import PIECES_BY_NAME
 
 
 Point = namedtuple('Point', ['x', 'y'])

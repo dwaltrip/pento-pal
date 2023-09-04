@@ -1,8 +1,9 @@
-from settings import NUM_CLASSES
-from parse_image.data.bounding_box import PieceBoundingBox
-from parse_image.parser.errors import PieceDetectionError
-from parse_image.parser.models import load_piece_detection_model
-from parse_image.parser.logger import logger
+from pento_parser_poc.settings import NUM_CLASSES
+from pento_parser_poc.errors import PieceDetectionError
+
+from pento_parser_poc.bounding_box import PieceBoundingBox
+from pento_parser_poc.models import load_piece_detection_model
+from pento_parser_poc.logger import logger
 
 
 VERBOSE = True

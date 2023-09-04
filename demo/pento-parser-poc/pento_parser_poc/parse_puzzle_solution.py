@@ -1,13 +1,13 @@
 
-from settings import GRID
+from pento_parser_poc.settings import GRID
 
-from parse_image.parser.get_puzzle_box_corners import get_puzzle_box_corners
-from parse_image.parser.get_piece_bounding_boxes import get_piece_bounding_boxes
-from parse_image.parser.straighten_rect import straighten_rect
-from parse_image.parser.bounding_boxes_to_grid_boxes import (
+from pento_parser_poc.get_puzzle_box_corners import get_puzzle_box_corners
+from pento_parser_poc.get_piece_bounding_boxes import get_piece_bounding_boxes
+from pento_parser_poc.straighten_rect import straighten_rect
+from pento_parser_poc.bounding_boxes_to_grid_boxes import (
     bounding_boxes_to_grid_boxes,
 )
-from parse_image.parser.get_puzzle_grid_from_piece_boxes import (
+from pento_parser_poc.get_puzzle_grid_from_piece_boxes import (
     get_puzzle_grid_from_piece_boxes
 )
 
