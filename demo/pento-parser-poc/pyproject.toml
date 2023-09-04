@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools >= 61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["pento_parser_poc"]
+
+[project]
+name = "pento_parser_poc"
+version="0.0.1-dev1"
+authors = [
+    {name = "Daniel Waltrip", email = "dwaltrip77@gmail.com"},
+]
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib >= 3.7",
+    "numpy >= 1.25",
+    "opencv-python >= 4.8",
+    "pillow >= 10.0",
+    "ptpython >= 3.0",
+    "rich >= 13.5",
+    "torch >= 2.0.1",
+    "torchvision >= 0.15",
+    "ultralytics >= 8.0",
+]
