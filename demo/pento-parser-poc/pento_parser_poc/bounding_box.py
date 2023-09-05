@@ -1,7 +1,7 @@
 from collections import namedtuple
 from dataclasses import dataclass, field
 
-from settings import CLASS_NAMES
+from pento_parser_poc.settings import CLASS_NAMES
 
 
 # Using namedtuple allows for splatting, unlike dataclass.

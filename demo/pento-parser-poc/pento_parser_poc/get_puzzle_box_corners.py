@@ -30,7 +30,11 @@ def get_puzzle_box_corners(image, conf_threshold=None):
 
     # Take the prediction with the highest confidence
     best_pred = sorted(preds, key=lambda x: x.conf, reverse=True)[0]
-    corners_from_keypoints = best_pred.keypoints.tolist()
+
+    # I had to change this from the version in parse-image-POC, as the
+    # new version of YOLO provides `results.Keypoints` instead of the tensor.
+    # TODO: make sure this is robust.
+    corners_from_keypoints = best_pred.keypoints.data[0].tolist()
 
     if len(corners_from_keypoints) != 4:
         raise CornerDetectionError(
