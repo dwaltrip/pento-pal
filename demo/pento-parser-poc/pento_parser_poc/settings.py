@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from types import SimpleNamespace
 
 
@@ -25,3 +27,14 @@ CLASS_MAPS = SimpleNamespace(
 )
 
 GRID = SimpleNamespace(height=10, width=6)
+
+PROJECT_ROOT = Path(__file__).parent.parent.absolute()
+WEIGHTS_DIR = os.path.join(PROJECT_ROOT, 'weights')
+
+def make_weight_path(model_name):
+    return os.path.join(WEIGHTS_DIR, Path(model_name).with_suffix('.pt'))
+
+WEIGHT_FILES = SimpleNamespace(
+    CORNER_PRED=make_weight_path('detect-puzzle-box--08-30--ds367-small-e80'),
+    PIECE_DETECT=make_weight_path('detect-pieces--08-31--ds147-small-e120'),
+)
