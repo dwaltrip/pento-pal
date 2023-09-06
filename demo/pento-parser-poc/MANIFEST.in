@@ -1,0 +1,2 @@
+include pento_parser_poc/weights/detect-pieces--08-31--ds147-small-e120.pt
+include pento_parser_poc/weights/detect-puzzle-box--08-30--ds367-small-e80.pt

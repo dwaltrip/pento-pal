@@ -7,7 +7,7 @@ packages = ["pento_parser_poc"]
 
 [project]
 name = "pento_parser_poc"
-version="0.0.1-dev1"
+version="0.0.1-dev2"
 authors = [
     {name = "Daniel Waltrip", email = "dwaltrip77@gmail.com"},
 ]

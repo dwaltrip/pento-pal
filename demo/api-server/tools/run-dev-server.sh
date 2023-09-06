@@ -7,4 +7,4 @@ source "$ROOT_DIR/venv/bin/activate"
 
 cd "$ROOT_DIR/app"
 
-flask run
+flask --debug run
