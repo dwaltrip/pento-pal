@@ -38,32 +38,37 @@ jinja2==3.1.2
     #   torch
 kiwisolver==1.4.5
     # via matplotlib
+markdown-it-py==3.0.0
+    # via rich
 markupsafe==2.1.3
     # via
     #   jinja2
     #   werkzeug
 matplotlib==3.7.2
     # via
+    #   pento-parser-poc
     #   seaborn
     #   ultralytics
+mdurl==0.1.2
+    # via markdown-it-py
 mpmath==1.3.0
     # via sympy
 networkx==3.1
     # via torch
 numpy==1.25.2
     # via
-    #   -r requirements.in
     #   contourpy
     #   matplotlib
     #   opencv-python
     #   pandas
+    #   pento-parser-poc
     #   scipy
     #   seaborn
     #   torchvision
     #   ultralytics
 opencv-python==4.8.0.76
     # via
-    #   -r requirements.in
+    #   pento-parser-poc
     #   ultralytics
 packaging==23.1
     # via
@@ -75,9 +80,12 @@ pandas==2.1.0
     #   ultralytics
 parso==0.8.3
     # via jedi
+pento-parser-poc @ file:///Users/danielwaltrip/all-files/projects/code/pentomino-puzzle/demo/pento-parser-poc
+    # via -r requirements.in
 pillow==10.0.0
     # via
     #   matplotlib
+    #   pento-parser-poc
     #   torchvision
     #   ultralytics
 prompt-toolkit==3.0.39
@@ -85,18 +93,20 @@ prompt-toolkit==3.0.39
 psutil==5.9.5
     # via ultralytics
 ptpython==3.0.23
-    # via -r requirements.in
+    # via pento-parser-poc
 py-cpuinfo==9.0.0
     # via ultralytics
 pygments==2.16.1
-    # via ptpython
+    # via
+    #   ptpython
+    #   rich
 pyparsing==3.0.9
     # via matplotlib
 python-dateutil==2.8.2
     # via
     #   matplotlib
     #   pandas
-pytz==2023.3
+pytz==2023.3.post1
     # via pandas
 pyyaml==6.0.1
     # via ultralytics
@@ -104,6 +114,8 @@ requests==2.31.0
     # via
     #   torchvision
     #   ultralytics
+rich==13.5.2
+    # via pento-parser-poc
 scipy==1.11.2
     # via ultralytics
 seaborn==0.12.2
@@ -114,12 +126,12 @@ sympy==1.12
     # via torch
 torch==2.0.1
     # via
-    #   -r requirements.in
+    #   pento-parser-poc
     #   torchvision
     #   ultralytics
 torchvision==0.15.2
     # via
-    #   -r requirements.in
+    #   pento-parser-poc
     #   ultralytics
 tqdm==4.66.1
     # via ultralytics
@@ -127,8 +139,8 @@ typing-extensions==4.7.1
     # via torch
 tzdata==2023.3
     # via pandas
-ultralytics==8.0.169
-    # via -r requirements.in
+ultralytics==8.0.171
+    # via pento-parser-poc
 urllib3==2.0.4
     # via requests
 wcwidth==0.2.6

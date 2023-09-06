@@ -28,8 +28,10 @@ CLASS_MAPS = SimpleNamespace(
 
 GRID = SimpleNamespace(height=10, width=6)
 
-PROJECT_ROOT = Path(__file__).parent.parent.absolute()
-WEIGHTS_DIR = os.path.join(PROJECT_ROOT, 'weights')
+PACKAGE_DIR = Path(__file__).parent.absolute()
+PROJECT_ROOT = PACKAGE_DIR.parent.absolute()
+
+WEIGHTS_DIR = os.path.join(PACKAGE_DIR, 'weights')
 
 def make_weight_path(model_name):
     return os.path.join(WEIGHTS_DIR, Path(model_name).with_suffix('.pt'))

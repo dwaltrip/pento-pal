@@ -2,9 +2,4 @@
 flask
 gunicorn
 
-numpy
-opencv-python
-ptpython
-torch
-torchvision
-ultralytics
+../pento-parser-poc
