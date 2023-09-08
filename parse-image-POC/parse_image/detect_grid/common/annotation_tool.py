@@ -10,10 +10,8 @@ from pathlib import Path
 import torchvision.transforms
 
 from settings import CLASS_NAMES, CLASS_MAPS, GRID
-from parse_image.utils.misc import (
-    generate_perlin_noise,
-    is_image,
-)
+from parse_image.utils.noise_utils import generate_perlin_noise
+from parse_image.utils.misc import is_image
 
 
 LABEL_VIZ = SimpleNamespace(

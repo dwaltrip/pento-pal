@@ -7,8 +7,8 @@ from torchvision import transforms
 
 from settings import PROJECT_ROOT
 
-from settings import AI_DATA_DIR, CLASS_NAMES
-from parse_image.utils.resize_and_pad import resize_and_pad
+from settings import AI_DATA_DIR, CLASS_MAPS
+from parse_image.utils.resize_as_square import resize_as_square
 from parse_image.detect_grid.hard_method.config import (
     IMAGE_SIDE_LEN,
     TRAINED_MODEL_SAVE_PATH,
@@ -19,7 +19,7 @@ from parse_image.detect_grid.hard_method.model import get_custom_model
 
 def prep_image(img_path):
     img = Image.open(img_path)
-    img = resize_and_pad(img, target_size=IMAGE_SIDE_LEN)
+    img = resize_as_square(img, side_len=IMAGE_SIDE_LEN)
     # remove alpha channel, if present. add batch dimension
     img_t = transforms.ToTensor()(img)[:3].unsqueeze(0)
     return img_t, img
@@ -48,9 +48,8 @@ def predict_grid(model, img_path, idx, debug=False):
     result = output.argmax(dim=-1)
 
     def result_to_cls_names(raw_result):
-        label_to_name = lambda x: CLASS_NAMES[x.item()]
         return [
-            [label_to_name(label) for label in row]
+            [CLASS_MAPS.class_id_to_name[pred.item()] for pred in row]
             for row in raw_result
         ]
 
@@ -88,9 +87,9 @@ if __name__ == '__main__':
     ]
 
     example_images = [
-        # os.path.join(AI_DATA_DIR, 'pento-detect-grid-2023-08-01/images/IMG_2926.png'),
-        os.path.join(AI_DATA_DIR, 'pento-detect-grid-2023-08-01/images/IMG_2991.png'),
-        os.path.join(AI_DATA_DIR, 'pento-detect-grid-2023-08-01/images/IMG_2772.png'),
+        # os.path.join(AI_DATA_DIR, 'detect-grid-hard--2023-08-01/images/IMG_2926.png'),
+        os.path.join(AI_DATA_DIR, 'detect-grid-hard--2023-08-01/images/IMG_2991.png'),
+        os.path.join(AI_DATA_DIR, 'detect-grid-hard--2023-08-01/images/IMG_2772.png'),
     ]
     images = [os.path.join(IMAGE_DIR, f) for f in example_images]
     # images = [os.path.join(IMAGE_DIR, f) for f in training_images]

@@ -9,7 +9,7 @@ from torchvision import transforms
 from settings import CLASS_NAMES, CLASS_MAPS
 
 from parse_image.utils.misc import is_image
-from parse_image.utils.resize_and_pad import resize_and_pad
+from parse_image.utils.resize_as_square import resize_as_square
 from parse_image.detect_grid.common.augment import get_augmentations
 from parse_image.detect_grid.hard_method.config import (
     IMAGE_SIDE_LEN,
@@ -100,7 +100,7 @@ class GridLabelDataset(Dataset):
 
     def _prep_image(self, image_path):
         img = Image.open(image_path)
-        img = resize_and_pad(img, side_len=IMAGE_SIDE_LEN)
+        img = resize_as_square(img, side_len=IMAGE_SIDE_LEN)
         img =  self.transform(img)
         # remove alpha channel, if there is one
         img = img[:3]
@@ -116,7 +116,7 @@ class GridLabelDataset(Dataset):
 
         lines = cleaned_labels.split('\n')
         return torch.tensor([
-            [CLASS_MAPS.name_to_label[name] for name in line.split(' ')]
+            [CLASS_MAPS.name_to_class_id[name] for name in line.split(' ')]
             for line in lines if line 
         ])
 

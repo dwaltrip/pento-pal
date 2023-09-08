@@ -11,7 +11,7 @@ from torchvision.transforms import ToTensor
 from torchvision.models import resnet50, ResNet50_Weights
 
 from settings import RESNET_IMAGE_SIDE_LEN, AI_DATA_DIR
-from parse_image.utils.resize_and_pad import resize_and_pad
+from parse_image.utils.resize_as_square import resize_as_square
 
 to_tensor = ToTensor()
 
@@ -54,7 +54,7 @@ def get_model_OLd():
 
 def prep_image(image_path):
     img = Image.open(image_path)
-    img = resize_and_pad(img, side_len=RESNET_IMAGE_SIDE_LEN)
+    img = resize_as_square(img, side_len=RESNET_IMAGE_SIDE_LEN)
     img = to_tensor(img)
     # remove alpha channel, if there is one
     img = img[:3]

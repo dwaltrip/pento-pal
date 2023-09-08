@@ -3,6 +3,8 @@ import sys
 from types import SimpleNamespace
 import yaml
 
+import torch
+
 
 # TODO: use stdlib to improve this
 def parse_script_args(arg_names):
@@ -24,3 +26,21 @@ def write_yaml_file(filepath, data):
 
     with open(filepath, 'w') as f:
         yaml.dump(data, f)
+
+
+IMAGE_EXTS = ['.png']
+
+def is_image(filename):
+    return any([filename.endswith(ext) for ext in IMAGE_EXTS])
+
+
+def get_output_shape(model, image_size):
+    with torch.no_grad():
+        dummy_tensor = torch.zeros((1,) + image_size) 
+        output = model(dummy_tensor)
+
+    return output.shape[1:]
+
+
+def count_params(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
