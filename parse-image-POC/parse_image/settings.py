@@ -28,3 +28,5 @@ CLASS_MAPS = SimpleNamespace(
 )
 
 GRID = SimpleNamespace(height=10, width=6)
+
+RESNET_IMAGE_SIDE_LEN = 224
