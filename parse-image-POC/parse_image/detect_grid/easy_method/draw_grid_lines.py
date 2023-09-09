@@ -1,44 +1,10 @@
 import math
 
 import matplotlib.pyplot as plt
-import cv2
 import numpy as np
 import torch
 
-def add_grid_lines(image_tensor, color=(255, 0, 0), thickness=1):
-    # Convert to (0, 255) range and to a numpy array
-    image = (image_tensor.permute(1,2,0) * 255).byte().numpy()
-
-    # Define the number of rows and cols
-    rows, cols = 10, 10
-
-    # Calculate the step sizes
-    row_step = image.shape[0] // rows
-    col_step = image.shape[1] // cols
-
-    # Hack to make cv2.line happy. It was getting angry about the image type,
-    #   even though we already converted to a numpy array.
-    image = image.copy()
-
-    # Draw the grid
-    for i in range(rows):
-        cv2.line(
-            image,
-            (0, i * row_step),
-            (image.shape[1], i * row_step),
-            color=color,
-            thickness=thickness,
-        )
-    for i in range(cols):
-        cv2.line(
-            image,
-            (i * col_step, 0),
-            (i * col_step, image.shape[0]),
-            color=color,
-            thickness=thickness,
-        )
-
-    return image
+from parse_image.detect_grid.common.viz import add_grid_lines
 
 
 def show_images(images):
@@ -74,5 +40,8 @@ def show_images(images):
 
 
 def add_grid_lines_and_show(images):
-    images_with_grid = [add_grid_lines(img) for img in images]
+    images_with_grid = [
+        add_grid_lines(img, rows=10, cols=10)
+        for img in images
+    ]
     show_images(images_with_grid)

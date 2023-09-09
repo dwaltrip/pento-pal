@@ -54,7 +54,7 @@ class PieceGridBox:
         return self.piece.print_grid(*args, **kwargs)
 
 
-def get_grid(boxes):
+def get_pixel_grid(boxes):
     return PixelGrid(
         top_left=Point(
             min(bb.top_left.x for bb in boxes),
@@ -68,7 +68,7 @@ def get_grid(boxes):
 
 
 def bounding_boxes_to_grid_boxes(bounding_boxes):
-    pixel_grid = get_grid(bounding_boxes)
+    pixel_grid = get_pixel_grid(bounding_boxes)
     cell_size = pixel_grid.cell_size
 
     # Convert bounding boxes to grid boxes

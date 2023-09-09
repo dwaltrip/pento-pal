@@ -19,6 +19,9 @@ from parse_image.parser.get_puzzle_grid_from_piece_boxes import (
 
 from parse_image.detect_puzzle_box.viz import draw_corners
 from parse_image.detect_piece.viz import draw_bounding_boxes
+from parse_image.detect_grid.common.viz import add_grid_lines
+
+from parse_image.parser.bounding_boxes_to_grid_boxes import get_pixel_grid
 
 
 StepViz = namedtuple('StepViz', ['title', 'image'])
@@ -47,11 +50,28 @@ def make_visualizations_for_each_step(image):
     draw_bounding_boxes(
         ImageDraw.Draw(image_with_detected_pieces),
         piece_bounding_boxes,
-        width=3,
+        width=4,
     )
 
     # Step 4 and 5
     piece_grid_boxes = bounding_boxes_to_grid_boxes(piece_bounding_boxes)
+
+    # viz for step 4
+    pixel_grid = get_pixel_grid(piece_bounding_boxes)
+    image_with_pixel_grid = add_grid_lines(
+        normalized_image,
+        rows=pixel_grid.rows,
+        cols=pixel_grid.cols,
+        rect=dict(
+            top_left=pixel_grid.top_left,
+            height=pixel_grid.height,
+            width=pixel_grid.width,
+        ),
+        color=(255, 0, 0),
+        thickness=3,
+    )
+
+    # viz for step 5
 
     # Step 6
     puzzle_grid = get_puzzle_grid_from_piece_boxes(piece_grid_boxes)
@@ -72,6 +92,10 @@ def make_visualizations_for_each_step(image):
         StepViz(
             title='Object detection of puzzle pieces',
             image=image_with_detected_pieces,
+        ),
+        StepViz(
+            title='Divide puzzle into evenly spaced grid',
+            image=image_with_pixel_grid,
         ),
         # StepViz(
     ]
@@ -94,6 +118,7 @@ def main():
         plt.title(f'Step {i} - {viz.title}')
         plt.imshow(np.array(viz.image))
         plt.axis('off')
+
     plt.show()
 
 
