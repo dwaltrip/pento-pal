@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 Point = namedtuple('Point', ['x', 'y'])
 
 
-@dataclass
+@dataclass(frozen=True, unsafe_hash=True)
 class GridCoord:
     row: int
     col: int

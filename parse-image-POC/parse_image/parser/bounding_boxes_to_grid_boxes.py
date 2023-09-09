@@ -31,7 +31,7 @@ class PixelGrid:
 class PieceGridBox:
     """ Bounding Box for a piece, aligned to the puzzle grid """
     class_id: int
-    top_left: Point
+    top_left: GridCoord
     height: int
     width: int
 
