@@ -176,3 +176,7 @@ def parse_piece_strings(piece_strings):
 
 PIECES_BY_NAME = parse_piece_strings(PIECE_SHAPE_STRINGS)
 PIECES = PIECES_BY_NAME.values()
+BBOX_SIZES_BY_PIECE_NAME = {
+    name: piece._orientations_by_bbox_size.keys()
+    for name, piece in PIECES_BY_NAME.items()
+}

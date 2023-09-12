@@ -1,8 +1,11 @@
 from collections import namedtuple
 from dataclasses import dataclass
 
-from settings import CLASS_NAMES, GRID
-from parse_image.boxes_to_grid.pieces import PIECES_BY_NAME
+from settings import GRID, CLASS_MAPS
+from parse_image.boxes_to_grid.pieces import (
+    PIECES_BY_NAME,
+    BBOX_SIZES_BY_PIECE_NAME,
+)
 
 
 Point = namedtuple('Point', ['x', 'y'])
@@ -35,7 +38,13 @@ class PieceGridBox:
     height: int
     width: int
 
-    piece_type = property(lambda self: CLASS_NAMES[self.class_id])
+    def __post_init__(self):
+        piece = self.piece
+        size = (self.height, self.width)
+        if size not in BBOX_SIZES_BY_PIECE_NAME[piece.name]:
+            raise ValueError(f'Invalid size {size} for piece "{piece.name}"')
+
+    piece_type = property(lambda self: CLASS_MAPS.class_id_to_name[self.class_id])
     piece = property(lambda self: PIECES_BY_NAME[self.piece_type])
 
     bot_right = property(lambda self: GridCoord(
