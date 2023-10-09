@@ -23,12 +23,15 @@ CORNER_PRED_TRAINING_RUN = 'detect-puzzle-box--08-30--ds367-small-e80'
 PIECE_DETECT_TRAINING_RUN = 'detect-pieces--08-31--ds147-small-120'
 
 
+_logger_log = logger.log
+logger.log = lambda *args, **kwargs: None
 logger.log(
     '[Models]',
     f'- corner detection : {CORNER_PRED_TRAINING_RUN}',
     f'- piece detection  : {PIECE_DETECT_TRAINING_RUN}',
     sep='\n\t',
 )
+logger.log = _logger_log
 
 def get_weights_path(training_run_name):
     return os.path.join(

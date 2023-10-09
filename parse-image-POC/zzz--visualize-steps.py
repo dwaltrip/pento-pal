@@ -19,9 +19,10 @@ from parse_image.parser.get_puzzle_grid_from_piece_boxes import (
 )
 
 from parse_image.utils.color import hex_to_rgb
+from parse_image.utils.draw import add_rect_with_alpha
 from parse_image.data.points import Point, GridCoord
-from parse_image.detect_puzzle_box.viz import draw_corners
-from parse_image.detect_piece.viz import draw_bounding_boxes
+from parse_image.detect_puzzle_box.viz import draw_corners, draw_dot
+from parse_image.detect_piece.viz import draw_bounding_boxes_with_alpha
 from parse_image.detect_grid.common.viz import add_grid_lines
 
 from parse_image.parser.bounding_boxes_to_grid_boxes import get_pixel_grid
@@ -49,19 +50,21 @@ def make_visualizations_for_each_step(image):
         normalized_image,
         conf_threshold=DETECTION_THRESHOLD,
     )
-    image_with_detected_pieces = normalized_image.copy()
-    draw_bounding_boxes(
-        ImageDraw.Draw(image_with_detected_pieces),
+    image_with_detected_pieces = draw_bounding_boxes_with_alpha(
+        normalized_image,
         piece_bounding_boxes,
-        width=4,
+        fill_alpha=90,
+        outline_alpha=150,
+        width=3,
     )
+    image_with_detected_pieces.show()
 
     # Step 4 and 5
     piece_grid_boxes = bounding_boxes_to_grid_boxes(piece_bounding_boxes)
 
     # viz for step 4
     pixel_grid = get_pixel_grid(piece_bounding_boxes)
-    def add_grid_lines_wrapped(image):
+    def add_grid_lines_wrapped(image, thickness=2):
         return add_grid_lines(
             # normalized_image,
             image,
@@ -73,14 +76,24 @@ def make_visualizations_for_each_step(image):
                 width=pixel_grid.width,
             ),
             color=(255, 0, 0),
-            thickness=2,
+            thickness=thickness,
         )
     image_with_pixel_grid = add_grid_lines_wrapped(normalized_image)
 
     # viz for step 5
     image_with_piece_grid_boxes = get_image_with_piece_grid_boxes(
-        add_grid_lines_wrapped(darken_image(normalized_image, factor=0.7)),
+        # add_grid_lines_wrapped(darken_image(normalized_image, factor=0.7)),
+        darken_image(
+            # add_grid_lines_wrapped(normalized_image, thickness=1),
+            normalized_image,
+            factor=0.7,
+        ),
+        # darken_image(normalized_image, 0.7),
         piece_grid_boxes,
+        pixel_grid,
+    )
+    image_with_piece_grid_boxes = draw_grid_dots(
+        image_with_piece_grid_boxes,
         pixel_grid,
     )
     image_with_piece_grid_boxes.show()
@@ -112,105 +125,50 @@ def make_visualizations_for_each_step(image):
         StepViz(
             title='Assign each piece to a grid cell',
             image=image_with_piece_grid_boxes,
-        )
+        ),
         # StepViz(
     ]
 
 
 def get_image_with_piece_grid_boxes(image, piece_grid_boxes, pixel_grid):
-    piece_types_per_grid_box = defaultdict(list)
+    image = image.convert('RGBA')
+
+    cell_h = pixel_grid.cell_size.height
+    cell_w = pixel_grid.cell_size.width
+
     for box in piece_grid_boxes:
-        tl, br = box.top_left, box.bot_right
-        for col in range(tl.col, br.col):
-            for row in range(tl.row, br.row):
-                coord = GridCoord(col=col, row=row)
-                piece_types_per_grid_box[coord].append(box.piece_type)
-    
-    cell_size = pixel_grid.cell_size
-    cell_h, cell_w = cell_size.height, cell_size.width
-    mini_grid = calc_square_grid_info(
-        container=SimpleNamespace(height=cell_h, width=cell_w),
-        rows=4,
-        cols=3,
-        pad=5,
-    )
-
-    def get_ith_mini_grid_square(container_top_left, i):
-        rows = mini_grid.rows
-        cols = mini_grid.cols
-        square_size = mini_grid.square_size
-        pad = mini_grid.pad
-        offset = Point(
-            x=container_top_left.x + mini_grid.offset.x,
-            y=container_top_left.y + mini_grid.offset.y,
+        tl = Point(
+            x = pixel_grid.top_left.x + (box.top_left.col * cell_w),
+            y = pixel_grid.top_left.y + (box.top_left.row * cell_h),
+        )
+        br = Point(
+            x = tl.x + (box.width * cell_w),
+            y = tl.y + (box.height * cell_h),
+        )
+        color = hex_to_rgb(CLASS_MAPS.name_to_color[box.piece_type])
+        image = add_rect_with_alpha(
+            image, 
+            [tl, br],
+            outline=(*color, 150),
+            fill=(*color, 100),
+            width=2,
         )
 
-        row = i // mini_grid.cols
-        col = i % mini_grid.cols
-
-        top_left = Point(
-            x=offset.x + pad + (col * (square_size + pad)),
-            y=offset.y + pad + (row * (square_size + pad)),
-        )
-        bot_right = Point(
-            x=top_left.x + square_size,
-            y=top_left.y + square_size,
-        )
-        return dict(top_left=top_left, bot_right=bot_right, size=square_size)
-
-    draw = ImageDraw.Draw(image)
-    def draw_piece_type_for_grid_cell(coord, class_num):
-        cell_tl = Point(
-            x=pixel_grid.top_left.x + (coord.col * cell_w),
-            y=pixel_grid.top_left.y + (coord.row * cell_h),
-        )
-        cell_br = Point(x=cell_tl.x + cell_w, y=cell_tl.y + cell_h)
-
-        color = hex_to_rgb(CLASS_MAPS.name_to_color[name])
-        mini_cell = get_ith_mini_grid_square(cell_tl, class_num)
-        draw.rectangle(
-            [mini_cell['top_left'], mini_cell['bot_right']],
-            outline=(220, 220, 220),
-            fill=(*color, 128),
-            width=1,
-        )
-
-    for coord, piece_types in piece_types_per_grid_box.items():
-        piece_types = set(piece_types)
-        for i in range(len(CLASS_NAMES)):
-            name = CLASS_NAMES[i]
-            if name in piece_types:
-                draw_piece_type_for_grid_cell(coord, i)
-    
     return image
 
 
-def calc_square_grid_info(container, rows, cols, pad):
-    con_h, con_w = container.height, container.width
-
-    total_pad_x = (cols + 1) * pad
-    total_pad_y = (rows + 1) * pad
-    square_size = min(
-        (con_w - total_pad_x) // cols,
-        (con_h - total_pad_y) // rows,
-    )
-
-    grid_w = square_size * cols + total_pad_x
-    grid_h = square_size * rows + total_pad_y
-    offset = Point(
-        x = (con_w - grid_w) // 2,
-        y = (con_h - grid_h) // 2,
-    )
-    
-    return SimpleNamespace(
-        rows=rows,
-        cols=cols,
-        height=con_h,
-        width=con_w,
-        square_size=square_size,
-        offset=offset,
-        pad=pad,
-    )
+def draw_grid_dots(image, pixel_grid):
+    cell_h = pixel_grid.cell_size.height
+    cell_w = pixel_grid.cell_size.width
+    draw = ImageDraw.Draw(image)
+    for row in range(pixel_grid.rows + 1):
+        for col in range(pixel_grid.cols + 1):
+            point = Point(
+                x = pixel_grid.top_left.x + (col * cell_w),
+                y = pixel_grid.top_left.y + (row * cell_h),
+            )
+            draw_dot(draw, point, 4, (255, 0, 0, 128))
+    return image
 
 
 def darken_image(image, factor=0.5):
